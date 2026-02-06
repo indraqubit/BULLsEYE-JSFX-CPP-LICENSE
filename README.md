@@ -20,6 +20,19 @@ This is a **portable, drop-in template** for migrating JSFX plugins to JUCE 8/C+
 - **CMake Build System**: Modern build configuration
 - **Complete Documentation**: Templates for all phases
 
+## ⚠️ IMPORTANT: Read First
+
+Before starting your migration, **read these documents in order:**
+
+1. **PORTING_GUIDE.md** (30 min) — Framework migration strategy + the 15 laws that prevent bugs
+2. **MIGRATION_LAWS.md** (30 min) — Detailed laws with incident examples and templates
+3. **MIGRATION_PLAN.md** (10 min) — Roadmap template for your specific project
+4. **REFERENCE.md** (10 min) — Algorithm documentation (if doing DSP port)
+
+These aren't optional reading. They will **save 10-20 hours of debugging** on your first port.
+
+---
+
 ## Quick Start
 
 ### 1. Copy Template
@@ -116,16 +129,50 @@ portable-jsfx-to-juce-migration/
 
 ---
 
+## The 15 Laws (Critical for Success)
+
+JSFX→JUCE ports have systematic traps. These 15 laws prevent 80% of them:
+
+| # | Law | Summary |
+|---|-----|---------|
+| 1 | Algorithm ≠ Output | Identical math ≠ identical results across platforms |
+| 2 | Implicit → Explicit | JSFX framework provides things; JUCE requires you to build them |
+| 3 | Sentinel ≠ Value | Special values can't share domain with real measurements |
+| 4 | Heuristics fail | No silence detection, sample counting, or pattern matching |
+| 5 | Transport ≠ Audio | "Stopped" doesn't mean processBlock() stops |
+| 6 | Warmup is algorithm | Early block behavior affects final integrated result |
+| 7 | Lifecycle = drift | Different reset timing → different final value |
+| 8 | Topology matters | Block size, order, timing all affect result |
+| 9 | Unknowable ≠ unsolvable | Some diffs are economically irrational to chase |
+| 10 | Calibration valid | Empirical offsets are legitimate engineering |
+| 11 | Synthetic tests lie | Real audio reveals bugs synthetic tests hide |
+| 12 | Read source, not cache | UI must read APVTS, not DSP object |
+| 13 | Glitches = timing | Stale UI values are thread-safety bugs |
+| 14 | Host is active | DAW behavior is part of your system |
+| 15 | Code ≠ intent | Translate intent, not just syntax |
+
+**See MIGRATION_LAWS.md for full details + incident examples + defensive templates.**
+
+---
+
 ## Migration Workflow
 
 ```
-1. 📁 jsfx/           ← Place your original .jsfx files here
+1. Read PORTING_GUIDE.md + MIGRATION_LAWS.md ← Do this first!
         ↓
-2. 📁 Source/         ← Migrate to C++ using SSOT patterns
+2. Create CONTRACT.md (framework differences documented)
         ↓
-3. 📁 build/          ← Compile to VST3/AU/LV2 plugins
+3. Create SENTINEL_AUDIT.md (special values documented)
         ↓
-4. DAW                ← Test your migrated plugin
+4. 📁 jsfx/           ← Place your original .jsfx files here
+        ↓
+5. 📁 Source/         ← Migrate to C++ using SSOT patterns
+        ↓
+6. Test: synthetic tests → real audio A/B → cross-DAW testing
+        ↓
+7. 📁 build/          ← Compile to VST3/AU/LV2 plugins
+        ↓
+8. DAW                ← Test your migrated plugin
 ```
 
 ---
@@ -195,6 +242,31 @@ Contains all DSP-related constants:
 - Algorithm constants
 - Filter parameters
 - Processing thresholds
+
+---
+
+## Testing Strategy (From PORTING_GUIDE.md)
+
+Porting requires **three levels of testing**:
+
+### Level 1: Synthetic Tests (20% of time)
+- Sine waves, pink noise, impulses
+- Fast to run, catches obvious bugs
+- **Limitation:** Doesn't catch platform differences
+
+### Level 2: Real Audio A/B Testing (40% of time)
+- 10+ diverse music files (pop, electronic, classical, etc.)
+- Compare against reference (JSFX) sample-by-sample
+- **Pass:** Within ±0.1 dB on 95%+ of files
+- **Essential:** This catches bugs synthetic tests hide
+
+### Level 3: Cross-DAW Testing (30% of time)
+- REAPER, Ableton Live, Logic Pro, Cubase (minimum)
+- Verify behavior is consistent across hosts
+- Test parameter changes, transport, edge cases
+- **Essential:** Hosts are active agents, not passive environments
+
+**See PORTING_GUIDE.md "Testing Strategy" section for detailed procedures.**
 
 ---
 
@@ -482,14 +554,44 @@ MIT License - Use freely for your projects.
 
 ---
 
+## Document Index
+
+### Getting Started (Read in This Order)
+1. **PORTING_GUIDE.md** — Main reference (framework migration strategy)
+2. **MIGRATION_LAWS.md** — Detailed laws (15 laws + incidents + templates)
+3. **FRAMEWORK_MIGRATION.md** — What's new in v2.0 (this release)
+
+### Reference Documentation
+- **REFERENCE.md** — Algorithm documentation (constants, formulas)
+- **LEARNING.md** — Development notes and discoveries
+- **MIGRATION_PLAN.md** — Roadmap template for your project
+
+### Project Structure
+- **Source/SSOT/** — Centralized constants (no hardcoding)
+- **Source/DSP/** — DSP implementation
+- **Source/Components/** — UI components
+- **jsfx/** — Your original JSFX files
+- **build/** — Compiled plugins (gitignored)
+
+### Code Templates
+- **templates/COMPONENT_TEMPLATE.md** — UI component template
+- **templates/DSP_TEMPLATE.md** — DSP processor template
+- **templates/SSOT_TEMPLATE.md** — SSOT constants template
+- **templates/REVIEW_TEMPLATE.md** — Code review template
+
+---
+
 ## Acknowledgments
 
 - **JUCE Framework**: https://juce.com
 - **Virtue DNA Framework**: Internal development philosophy
 - **TETRIS Principles**: Thread-safe DSP architecture
+- **BULLsEYE Project**: Real-world case study (Feb 2026)
 
 ---
 
-**Template Version:** 1.0.0  
+**Template Version:** 2.0.0  
 **Created:** 2025-12-20  
-**Based on:** IntelliMute Migration Project
+**Updated:** 2026-02-07  
+**Based on:** IntelliMute + BULLsEYE Migration Projects  
+**Status:** Production-ready, tested on 3+ real plugins
