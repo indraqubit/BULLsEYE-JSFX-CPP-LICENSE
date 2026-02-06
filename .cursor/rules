@@ -1,0 +1,42 @@
+[
+  {
+    "file": "**/*.cpp",
+    "rule": "SSOT Compliance - Always check UISSOT.h and ModelSSOT.h before adding constants"
+  },
+  {
+    "file": "**/*.h",
+    "rule": "TETRIS Principles - DSP code must be trivially copyable and thread-safe"
+  },
+  {
+    "file": "CMakeLists.txt",
+    "rule": "CMake Configuration - Use JUCE as submodule or symlink at modules/JUCE"
+  },
+  {
+    "file": "Source/SSOT/*.h",
+    "rule": "SSOT Files - Single Source of Truth, never hardcode values elsewhere"
+  },
+  {
+    "file": "Source/DSP/*.h",
+    "rule": "DSP Template - Follow TETRIS principles: Thread Separation, Encapsulation, Trivially Copyable, Reference Processing, Internal Double, Smoothing"
+  },
+  {
+    "file": "Source/PluginProcessor.cpp",
+    "rule": "Processor - Read parameters atomically, delegate to DSP core"
+  },
+  {
+    "file": "Source/PluginEditor.cpp",
+    "rule": "Editor - Use UISSOT dimensions and colors, update on parameter changes"
+  },
+  {
+    "file": "Source/Components/*.cpp",
+    "rule": "Components - Use UISSOT helpers, handle mouse events properly"
+  },
+  {
+    "file": "**/*.cpp",
+    "rule": "JUCE 8 - Use module includes, FontOptions, inline Colour constructors"
+  },
+  {
+    "file": "README.md",
+    "rule": "Documentation - Keep updated with project-specific values"
+  }
+]
