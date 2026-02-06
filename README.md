@@ -60,15 +60,18 @@ portable-jsfx-to-juce-migration/
 ├── LEARNINGS.md                # Development notes
 ├── MIGRATION_PLAN.md           # Migration roadmap template
 │
-├── Source/
+├── 📁 jsfx/                    # ← YOUR ORIGINAL JSFX SOURCE FILES
+│   └── *.jsfx                  # Original JSFX plugins (reference only)
+│
+├── 📁 Source/                  # ← GENERATED JUCE C++ CODE
 │   ├── SSOT/                   # Single Source of Truth files
 │   │   ├── ModelSSOT.h         # Model layer constants
 │   │   ├── UISSOT.h            # UI layer constants
-│   │   ├── ProcessorSSOT.h      # Processor layer constants
+│   │   ├── ProcessorSSOT.h     # Processor layer constants
 │   │   └── DSPSSOT.h           # DSP layer constants
 │   │
 │   ├── DSP/                    # DSP implementation
-│   │   └── YourProcessor.h      # TETRIS-compliant processor
+│   │   └── YourProcessor.h     # TETRIS-compliant processor
 │   │
 │   ├── Components/             # UI components
 │   │   ├── StatusDisplayComponent.h/cpp
@@ -78,12 +81,17 @@ portable-jsfx-to-juce-migration/
 │   │   └── ModeDescriptionComponent.h/cpp
 │   │
 │   ├── PluginProcessor.h/cpp   # Main audio processor
-│   └── PluginEditor.h/cpp       # Main UI editor
+│   └── PluginEditor.h/cpp      # Main UI editor
+│
+├── 📁 build/                   # ← BUILD OUTPUT (git-ignored)
+│   ├── *.vst3/                # VST3 plugin (Windows/Linux)
+│   ├── *.component/           # AU plugin (macOS)
+│   └── *.so/                  # LV2 plugin (Linux)
 │
 ├── modules/
 │   └── JUCE/                   # JUCE as submodule/symlink
 │
-├── templates/                  # Code templates
+├── templates/                 # Code templates
 │   ├── COMPONENT_TEMPLATE.md
 │   ├── DSP_TEMPLATE.md
 │   ├── SSOT_TEMPLATE.md
@@ -92,6 +100,43 @@ portable-jsfx-to-juce-migration/
 └── .cursor/
     └── rules                   # AI assistant rules
 ```
+
+---
+
+## Source Locations
+
+| Content | Location | Purpose |
+|---------|----------|---------|
+| **JSFX Source** | `jsfx/*.jsfx` | Your original JSFX reference files |
+| **JUCE C++ Source** | `Source/` | Migrated C++ code |
+| **SSOT Constants** | `Source/SSOT/` | All centralized constants |
+| **DSP Implementation** | `Source/DSP/` | Audio processing logic |
+| **UI Components** | `Source/Components/` | User interface elements |
+| **Build Output** | `build/` | Compiled plugins (VST3/AU/LV2) |
+
+---
+
+## Migration Workflow
+
+```
+1. 📁 jsfx/           ← Place your original .jsfx files here
+        ↓
+2. 📁 Source/         ← Migrate to C++ using SSOT patterns
+        ↓
+3. 📁 build/          ← Compile to VST3/AU/LV2 plugins
+        ↓
+4. DAW                ← Test your migrated plugin
+```
+
+---
+
+## Build Outputs
+
+| Format | Location | Platform |
+|--------|----------|----------|
+| **VST3** | `build/*.vst3/` | Windows, Linux |
+| **AU** | `build/*.component/` | macOS |
+| **LV2** | `build/*.so/` | Linux |
 
 ---
 
@@ -301,6 +346,27 @@ Only implement what's needed:
 ---
 
 ## Build Commands
+
+### Using build.sh (Recommended)
+
+```bash
+# Run build script
+./build.sh
+
+# Or manually:
+chmod +x build.sh
+./build.sh
+```
+
+The `build.sh` script handles:
+- Creating build directory
+- Configuring with CMake
+- Building all targets
+- Verifying output artifacts
+
+---
+
+### Manual Build
 
 ### macOS
 

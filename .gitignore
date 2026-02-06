@@ -1,0 +1,49 @@
+# JUCE Plugin Template - .gitignore
+
+# Build directories
+build/
+*.build/
+cmake_build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# JUCE
+modules/JUCE/
+!modules/JUCE/.gitkeep
+
+# Generated files
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.dylib
+*.so
+*.vst3
+*.component
+*.plugin
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Debug/Release
+Debug/
+Release/
+RelWithDebInfo/
+
+# Packaging
+*.zip
+*.dmg
+*.pkg
