@@ -1,5 +1,7 @@
 # BULLsEYE Sprint 5 Tracker
 
+> **Naming Note:** This file is currently named `sprint_2.md` for repository continuity, but its active content and scope are **Sprint 5**.
+
 **License Integration Assessment & Implementation**
 
 ---
@@ -77,7 +79,7 @@
 | Task | Status | Priority | Estimate | Dependencies |
 |------|--------|----------|----------|--------------|
 | Add license engine member to PluginProcessor | ⏳ TODO | P0 | 0.5d | Phase 1 |
-| Implement initializeLicenseEngine() | ⏳ TODO | P0 | 0.5d | LicenseSSOT.h |
+| Implement initializeLicenseEngine() in `prepareToPlay()` | ⏳ TODO | P0 | 0.5d | LicenseSSOT.h |
 | Add isLicensedAtomically() gate in processBlock | ⏳ TODO | P0 | 1.0d | License engine init |
 | Add license accessor methods for UI | ⏳ TODO | P1 | 0.5d | Engine integration |
 | Verify audio thread safety (no allocations) | ⏳ TODO | P0 | 0.5d | All above |
@@ -141,7 +143,7 @@
 
 | Task | Status | Priority | Estimate | Dependencies |
 |------|--------|----------|----------|--------------|
-| Create 20 new license test cases | ⏳ TODO | P0 | 1.5d | Test requirements doc |
+| Create 30 new license test cases (contract-layer aware) | ⏳ TODO | P0 | 2.5d | Test requirements doc |
 | Implement audio thread safety tests | ⏳ TODO | P0 | 0.5d | Test framework |
 | Implement UI license tests | ⏳ TODO | P0 | 0.5d | Test framework |
 | Implement state persistence tests | ⏳ TODO | P0 | 0.5d | Test framework |
@@ -180,12 +182,13 @@
 
 ### Week 3: Installer & Testing
 - Days 9-10: Phase 5 (macOS Installer, TBD)
-- Days 11-12: Phase 6 (Testing & Validation)
+- Days 11-12: Phase 6 (Testing & Validation, part 1)
 
 ### Week 4: Documentation & Release
-- Days 13-14: Phase 7 (Documentation & Release)
+- Days 13-14: Phase 6 (Testing & Validation, part 2)
+- Days 15-16: Phase 7 (Documentation & Release)
 
-**Total Estimated Duration:** ~12-14 working days
+**Total Estimated Duration:** ~14-16 working days
 
 ---
 
@@ -233,10 +236,10 @@
 
 | Task | Owner | Status | Acceptance Criteria |
 |------|-------|--------|-------------------|
-| Check if `portable-license-drop-in/NETWORK_VALIDATION_REFERENCE.md` exists | TBD | ✅ PASS | File exists and contains sections 6.1-8.3 |
-| Extract API endpoints, timeouts, retry strategy | TBD | ✅ PASS | Document shows: `/generate`, `/verify`, `/deactivate`, `/transfer`, `/health` endpoints |
-| Validate URL and configuration format | TBD | ✅ PASS | Base URL format: `https://byiqaudio.com/api/v1`, timeout=30s, retries=3 |
-| Cross-reference with LicenseSSOT requirements | TBD | ✅ PASS | API spec matches Phase 1 task expectations (line 68-71) |
+| Check if `portable-license-drop-in/NETWORK_VALIDATION_REFERENCE.md` exists | Sprint Team | ✅ PASS | File exists and contains sections 6.1-8.3 |
+| Extract API endpoints, timeouts, retry strategy | Sprint Team | ✅ PASS | Document shows: `/generate`, `/verify`, `/deactivate`, `/transfer`, `/health` endpoints |
+| Validate URL and configuration format | Sprint Team | ✅ PASS | Base URL format: `https://byiqaudio.com/api/v1`, timeout=30s, retries=3 |
+| Cross-reference with LicenseSSOT requirements | Sprint Team | ✅ PASS | API spec matches Phase 1 task expectations (line 68-71) |
 
 **Output:** ✅ Network Validation Spec Verified
 - File: `portable-license-drop-in/NETWORK_VALIDATION_REFERENCE.md` (765 lines, comprehensive)
@@ -259,11 +262,11 @@
 
 | Task | Owner | Status | Acceptance Criteria |
 |------|-------|--------|-------------------|
-| Audit `portable-license-drop-in/` directory structure | TBD | ✅ PASS | Identify all `.h`, `.hpp`, `.cpp` files; document architecture |
-| Identify header-only vs compiled components | TBD | ✅ PASS | List any `.cpp` files that require compilation |
-| Check for runtime dependencies (OpenSSL, WinHTTP, etc.) | TBD | ✅ PASS | Document platform-specific dependencies in drop-in kit |
-| Verify no pre-built binaries included | TBD | ✅ PASS | Confirm no `.a`, `.lib`, `.so`, `.dylib` in kit |
-| Extract integration interface (includes, namespaces) | TBD | ✅ PASS | Document main include path and public API |
+| Audit `portable-license-drop-in/` directory structure | Sprint Team | ✅ PASS | Identify all `.h`, `.hpp`, `.cpp` files; document architecture |
+| Identify header-only vs compiled components | Sprint Team | ✅ PASS | List any `.cpp` files that require compilation |
+| Check for runtime dependencies (OpenSSL, WinHTTP, etc.) | Sprint Team | ✅ PASS | Document platform-specific dependencies in drop-in kit |
+| Verify no pre-built binaries included | Sprint Team | ✅ PASS | Confirm no `.a`, `.lib`, `.so`, `.dylib` in kit |
+| Extract integration interface (includes, namespaces) | Sprint Team | ✅ PASS | Document main include path and public API |
 
 **Output:** ✅ License Engine Architecture Verified
 - **Header-Only Core:** ✅ Three implementations all `.hpp` only, no `.cpp` compilation required
@@ -300,12 +303,12 @@
 
 | Task | Owner | Status | Acceptance Criteria |
 |------|-------|--------|-------------------|
-| List all public headers in drop-in kit | TBD | ✅ PASS | Document file paths for `LicenseEngine.h`, `LicenseSSOT.h`, etc. |
-| Identify required constants and enums | TBD | ✅ PASS | Match drop-in constants to Phase 1 task requirements (trial days, mute flag, watermark) |
-| Check for CMakeLists.txt or build configuration | TBD | ✅ PASS | Document if kit provides CMake integration or manual configuration needed |
-| Validate compatibility with JUCE/existing build system | TBD | ✅ PASS | Confirm drop-in kit doesn't conflict with current CMakeLists.txt |
-| Extract UI component requirements | TBD | ✅ PASS | Document what Phase 3 UI components must implement |
-| Review platform-specific code (macOS Keychain, Windows Registry, Linux) | TBD | ✅ PASS | Confirm platform support matches deployment target (macOS staging) |
+| List all public headers in drop-in kit | Sprint Team | ✅ PASS | Document file paths for `LicenseEngine.h`, `LicenseSSOT.h`, etc. |
+| Identify required constants and enums | Sprint Team | ✅ PASS | Match drop-in constants to Phase 1 task requirements (trial days, mute flag, watermark) |
+| Check for CMakeLists.txt or build configuration | Sprint Team | ✅ PASS | Document if kit provides CMake integration or manual configuration needed |
+| Validate compatibility with JUCE/existing build system | Sprint Team | ✅ PASS | Confirm drop-in kit doesn't conflict with current CMakeLists.txt |
+| Extract UI component requirements | Sprint Team | ✅ PASS | Document what Phase 3 UI components must implement |
+| Review platform-specific code (macOS Keychain, Windows Registry, Linux) | Sprint Team | ✅ PASS | Confirm platform support matches deployment target (macOS staging) |
 
 **Output:** ✅ Integration Mapping Verified
 - **Public API Headers:** Core engine ready for direct inclusion
@@ -350,9 +353,9 @@
 
 | Deliverable | Owner | Due | Format |
 |-------------|-------|-----|--------|
-| Network Validation Spec Report | TBD | Before Phase 1 | Markdown in `docs/` or inline comments |
-| License Engine Architecture Document | TBD | Before Phase 1 | Markdown in `docs/` or reference in sprint_2.md |
-| Integration Mapping & Action Items | TBD | Before Phase 1 | Table in sprint_2.md with updated Phase 1 tasks |
+| Network Validation Spec Report | Sprint Team | Before Phase 1 | Markdown in `docs/` or inline comments |
+| License Engine Architecture Document | Sprint Team | Before Phase 1 | Markdown in `docs/` or reference in sprint_2.md |
+| Integration Mapping & Action Items | Sprint Team | Before Phase 1 | Table in sprint_2.md with updated Phase 1 tasks |
 
 ---
 
@@ -398,7 +401,7 @@
    - Phase 3 (UI): 2 days — LicenseStatusComponent + activation dialog
    - Phase 4 (macOS): 2 days — Deployment verification + codesign
    - Phase 5 (macOS Installer): TBD — installer work intentionally deferred
-   - Phase 6 (Testing): 3 days — 20 new tests + DAW validation
+  - Phase 6 (Testing): 4 days — 30 new tests + DAW validation
    - Phase 7 (Documentation): 1 day — Changelogs, release tag
 
 5. **Ready to Proceed: YES** ✅
@@ -441,7 +444,7 @@
 - [ ] No functional changes to plugin behavior
 
 **Phase 2 Complete When:**
-- [ ] License engine initialized in constructor
+- [ ] License engine initialized in `prepareToPlay()`
 - [ ] `isLicensedAtomically()` gate in `processBlock`
 - [ ] All audio thread safety tests pass
 - [ ] Zero allocations in audio path (verified with profiler)
@@ -465,7 +468,7 @@
 - [ ] Installer script documented
 
 **Phase 6 Complete When:**
-- [ ] All 20 new license tests pass
+- [ ] All 30 new license tests pass
 - [ ] All 48 existing tests still pass (0 regressions)
 - [ ] DAW testing complete (REAPER, Logic, Ableton)
 - [ ] Deployment verification script passes
@@ -480,7 +483,7 @@
 
 - [ ] License engine integrated without breaking existing functionality
 - [ ] All 48 existing tests pass (100% regression-free)
-- [ ] All 20 new license tests pass
+- [ ] All 30 new license tests pass
 - [ ] Trial mode: 14 days, full audio functionality, "TRIAL" watermark
 - [ ] Licensed mode: License key activation, status persistence
 - [ ] macOS installer created for both trial and licensed builds (TBD)
@@ -499,7 +502,7 @@
 | `Source/SSOT/LicenseSSOT.h` | License configuration constants | 1 |
 | `Source/Components/LicenseStatusComponent.h` | License status UI component | 3 |
 | `Source/Components/LicenseStatusComponent.cpp` | License status implementation | 3 |
-| `tests/License/TestLicenseIntegration.cpp` | 20 new license test cases | 6 |
+| `tests/License/TestLicenseIntegration.cpp` | 30 new license test cases | 6 |
 | `BULLsEYE.entitlements` | Hardened runtime entitlements (macOS) | 4 |
 | `build/verify_license_integration.sh` | Deployment verification script | 4 |
 | `docs/INSTALLER_GUIDE.md` | Installer usage documentation | 7 |
@@ -759,6 +762,23 @@ grep -i error ~/Library/Application\ Support/IQ/BULLsEYE/license_debug.log
 | LIC-018 | Deploy | Plugin loads on clean Mac (no Homebrew) | Manual |
 | LIC-019 | Offline | Offline validation works for 30+ days | UI |
 | LIC-020 | Grace | Grace period allows continued use for 7 days | UI |
+| LIC-021 | Realtime | License state change during active playback (no glitch/no block) | Audio + UI |
+| LIC-022 | Recovery | DAW reload with corrupt license blob → deterministic TRIAL fallback | UI |
+| LIC-023 | Concurrency | UI refresh/activation stress while audio performs atomic reads | Audio + UI |
+| LIC-024 | Fallback | Unknown/stale/unavailable license state always resolves to exact TRIAL behavior | Audio + UI |
+| LIC-025 | Time | Clock tampering (forward/backward) preserves safe trial/grace behavior | UI |
+| LIC-026 | Activation | Activation/deactivation idempotency under repeated requests | UI |
+| LIC-027 | Network | Timeout/DNS/SSL/backend 5xx failures remain bounded, no audio impact | UI + Build |
+| LIC-028 | Host | Multi-instance DAW session behavior remains consistent and non-corrupting | Host + UI |
+| LIC-029 | Migration | Persistence schema upgrade from old/no-license state | UI |
+| LIC-030 | Perf | Cold-start license init stays within startup budget | UI + Build |
+
+### Contract Layer Coverage (License Tests)
+
+- **Product Contract:** LIC-021, LIC-024, LIC-028
+- **Framework (JUCE) Contract:** LIC-021, LIC-022, LIC-023, LIC-029
+- **API/Method Contract:** LIC-003, LIC-004, LIC-021, LIC-023, LIC-024
+- **Host/Platform Contract:** LIC-016, LIC-017, LIC-018, LIC-027, LIC-028
 
 ### Integration Tests (Existing)
 
@@ -823,7 +843,7 @@ All 48 existing tests must continue to pass after license integration:
 
 ### Phase 2: Core Engine
 - [ ] Add license engine member to PluginProcessor
-- [ ] Implement initializeLicenseEngine()
+- [ ] Implement initializeLicenseEngine() in `prepareToPlay()`
 - [ ] Add isLicensedAtomically() gate in processBlock
 - [ ] Add license accessor methods for UI
 - [ ] Verify audio thread safety (no allocations)
@@ -852,7 +872,7 @@ All 48 existing tests must continue to pass after license integration:
 - [ ] [TBD] Test install/uninstall cycle
 
 ### Phase 6: Testing
-- [ ] Create 20 new license test cases
+- [ ] Create 30 new license test cases (including contract-layer P0 additions)
 - [ ] Implement audio thread safety tests
 - [ ] Implement UI license tests
 - [ ] Implement state persistence tests
@@ -867,6 +887,27 @@ All 48 existing tests must continue to pass after license integration:
 - [ ] Create INSTALLER_GUIDE.md
 - [ ] Update REFERENCE.md with LicenseSSOT
 - [ ] Create release tag with metadata
+
+---
+
+## Contradiction Check (Mental-Model Gate)
+
+Run this before marking any phase complete.
+
+- [ ] **Sprint Identity Consistent**: filename, title, sprint number, and release target all match (no Sprint 2 vs Sprint 5 mismatch).
+- [ ] **Status vs Evidence Consistent**: any `✅ COMPLETE` claim has concrete evidence (test run, command output, artifact, or merged file change).
+- [ ] **Scope Labels Consistent**: `TBD/Future` items are not included as committed done criteria for active sprint scope.
+- [ ] **Ownership Consistent**: active-phase tasks (P0/P1) have assigned owners (no unresolved `TBD` owners when marked ready).
+- [ ] **Phase Dependencies Consistent**: no downstream phase marked complete while prerequisite phase tasks remain open.
+- [ ] **Lifecycle Contract Consistent**: license engine init boundary explicitly defined (`prepareToPlay()`), not implied or deferred to `processBlock()`.
+- [ ] **Audio Thread Contract Consistent**: no locks/alloc/I/O/network in `processBlock()` and only atomic reads used for license checks.
+- [ ] **Fallback Contract Consistent**: unknown/stale/unavailable license state explicitly maps to deterministic TRIAL behavior (documented + tested).
+- [ ] **Test Plan vs Requirements Consistent**: includes mandatory cases:
+  - state change during active playback
+  - DAW reload with corrupt license blob
+- [ ] **Platform/Compliance Claims Consistent**: macOS packaging/codesign/rpath claims are backed by actual verification commands and results.
+- [ ] **Docs Cross-Reference Consistent**: references (LAW_BOOK, AGENT_MENTAL_MODEL, NETWORK_VALIDATION_REFERENCE) are valid and aligned with current sprint decisions.
+- [ ] **Progress Summary Consistent**: backlog table, phase checklist, and narrative summary report the same completion state.
 
 ---
 
