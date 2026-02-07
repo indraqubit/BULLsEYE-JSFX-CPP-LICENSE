@@ -87,11 +87,12 @@ End User Distribution
    - Reference for algorithm validation
 
 2. **JSFX to C++ Migration** (`Source/DSP/BULLsEYEProcessor.h`)
-   - ITU-R BS.1770-4 K-weighting implementation
-   - LUFS-I gated integration algorithm
-   - True peak detection with 4x oversampling
-   - Full parity testing (31 architectural laws)
-
+    - ITU-R BS.1770-4 K-weighting implementation
+    - LUFS-I gated integration algorithm
+    - True peak detection with 4x oversampling
+    - Full parity testing (31 architectural laws)
+    https://github.com/indraqubit/BULLsEYE-JSFX-CPP-LICENSE
+   
 3. **JUCE C++ Plugin**
    - VST3 format support
    - Audio Units (AU) support
@@ -99,9 +100,10 @@ End User Distribution
    - Professional UI with circular meter
 
 4. **License Integration** (`portable-license-drop-in/`)
-   - Optional license engine integration
-   - Drop-in license verification system
-   - See INTEGRATION_GUIDE.md for details
+    - Optional license engine integration
+    - Drop-in license verification system
+    - See INTEGRATION_GUIDE.md for details
+    This repository (https://github.com/indraqubit/BULLsEYE-JSFX-CPP-LICENSE)
 
 5. **Installer Integration**
    - Distribution packaging
@@ -222,10 +224,12 @@ See `BUILD_DEPLOYMENT.md` for detailed instructions.
 
 Verified to work correctly in:
 - ✅ **Logic Pro** (AU)
-- ✅ **Ableton Live 11+** (VST3)
-- ✅ **Studio One 5+** (VST3)
+- ✅ **Ableton Live** (VST3)
+- ✅ **Studio One** (VST3)
 - ✅ **REAPER** (AU + VST3)
 - ✅ **Bitwig Studio** (VST3)
+
+See DAW_TESTING.md for complete DAW setup and troubleshooting guides.
 
 ## Specifications
 
@@ -239,10 +243,11 @@ Verified to work correctly in:
 
 ### Performance
 
-- **Plugin Load Time:** <100ms
+- **Plugin Load Time:** <100 ms
 - **CPU Usage:** <1% idle, <5% full-scale signal
 - **Latency:** 0 samples (meter only)
 - **Buffer Size:** Supports 64 to 8192 samples
+- **Test Execution:** ~100 ms (48 tests)
 
 ### System Requirements
 
