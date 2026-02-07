@@ -92,13 +92,25 @@ fi
 # Check binary architecture
 echo ""
 echo "Binary architecture:"
-VST3_BINARY=$(find ~/Library/Audio/Plug-Ins/VST3/BULLsEYE.vst3 -name "BULLsEYE" -type f 2>/dev/null | head -1)
+
+# Detect platform and set plugin directory
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    PLUGIN_DIR="${HOME}/Library/Audio/Plug-Ins/VST3"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    PLUGIN_DIR="${HOME}/.vst3"
+elif [[ "$OSTYPE" == "msys" ]]; then
+    PLUGIN_DIR="${APPDATA}/Local/Plug-Ins/VST3"
+else
+    PLUGIN_DIR="${HOME}/.vst3"
+fi
+
+VST3_BINARY=$(find "${PLUGIN_DIR}/BULLsEYE.vst3" -name "BULLsEYE" -type f 2>/dev/null | head -1)
 if [ -n "$VST3_BINARY" ]; then
     echo "VST3: $VST3_BINARY"
     file "$VST3_BINARY" 2>/dev/null || echo "  Could not determine architecture"
     lipo -info "$VST3_BINARY" 2>/dev/null || echo "  (lipo not available for single-architecture builds)"
 else
-    echo "  VST3 binary not found (not yet installed)"
+    echo "  VST3 binary not found in ${PLUGIN_DIR}"
 fi
 
 echo ""

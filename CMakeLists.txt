@@ -131,22 +131,64 @@ endif()
 # CUSTOM COMMANDS
 # ========================================================================
 
-# Copy built plugins to standard locations (optional)
-# macOS VST3
-add_custom_command(TARGET BULLsEYE POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_FILE:BULLsEYE>"
-        "$ENV{HOME}/Library/Audio/Plug-Ins/VST3/BULLsEYE.vst3"
-    COMMENT "Installing VST3 to ~/Library/Audio/Plug-Ins/VST3/"
-)
+# ========================================================================
+# PLUGIN INSTALLATION (Global Paths)
+# ========================================================================
+# Determine platform-specific plugin directories
+if(APPLE)
+    set(PLUGIN_VST3_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/VST3")
+    set(PLUGIN_AU_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/Components")
+elseif(WIN32)
+    # Windows: Program Files or user AppData
+    if(DEFINED ENV{PROGRAMFILES})
+        set(PLUGIN_VST3_DIR "$ENV{PROGRAMFILES}/Common Files/VST3")
+    else()
+        set(PLUGIN_VST3_DIR "$ENV{APPDATA}/Local/Plug-Ins/VST3")
+    endif()
+elseif(UNIX AND NOT APPLE)
+    # Linux: Standard plugin directories
+    set(PLUGIN_VST3_DIR "$ENV{HOME}/.vst3")
+    set(PLUGIN_LV2_DIR "$ENV{HOME}/.lv2")
+endif()
 
-# macOS AU
-add_custom_command(TARGET BULLsEYE POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_FILE:BULLsEYE>"
-        "$ENV{HOME}/Library/Audio/Plug-Ins/Components/BULLsEYE.component"
-    COMMENT "Installing AU to ~/Library/Audio/Plug-Ins/Components/"
-)
+# Copy built plugins to standard plugin directories
+if(APPLE)
+    # macOS VST3
+    add_custom_command(TARGET BULLsEYE POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGIN_VST3_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:BULLsEYE>"
+            "${PLUGIN_VST3_DIR}/BULLsEYE.vst3"
+        COMMENT "Installing VST3 to ${PLUGIN_VST3_DIR}/"
+    )
+
+    # macOS AU
+    add_custom_command(TARGET BULLsEYE POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGIN_AU_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:BULLsEYE>"
+            "${PLUGIN_AU_DIR}/BULLsEYE.component"
+        COMMENT "Installing AU to ${PLUGIN_AU_DIR}/"
+    )
+elseif(WIN32)
+    # Windows VST3
+    add_custom_command(TARGET BULLsEYE POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGIN_VST3_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:BULLsEYE>"
+            "${PLUGIN_VST3_DIR}/BULLsEYE.vst3"
+        COMMENT "Installing VST3 to ${PLUGIN_VST3_DIR}/"
+    )
+elseif(UNIX AND NOT APPLE)
+    # Linux VST3
+    add_custom_command(TARGET BULLsEYE POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PLUGIN_VST3_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:BULLsEYE>"
+            "${PLUGIN_VST3_DIR}/BULLsEYE.vst3"
+        COMMENT "Installing VST3 to ${PLUGIN_VST3_DIR}/"
+    )
+endif()
 
 # ========================================================================
 # CODE SIGNING (OPTIONAL - For Distribution)
