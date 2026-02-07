@@ -31,6 +31,7 @@
 - [ ] Sumber kebenaran tunggal: snapshot lisensi atomik di EngineCore.
 - [ ] Update state hanya lewat commit/swap API EngineCore.
 - [ ] Publish hanya snapshot lengkap (tidak ada partial publish).
+- [ ] Snapshot lisensi **immutable per audio block** (tidak ada mutasi di tengah block).
 
 ### Fallback Deterministik
 - [ ] Jika state lisensi unknown/stale/unavailable → fallback **TRIAL**.
@@ -46,6 +47,7 @@
 - [ ] UI/background task (aktivasi/refresh/network) tetap off audio thread.
 - [ ] UI refresh bounded (target ±1 Hz untuk status yang tidak realtime-kritis).
 - [ ] `getStateInformation()` / `setStateInformation()` konsisten terhadap state lisensi.
+- [ ] Serialization state **tidak memicu validasi ulang / network / refresh**.
 
 ---
 
@@ -56,6 +58,7 @@
 - [ ] **C3 Lifecycle Host:** boundary init/restore teardown jelas dan aman.
 - [ ] **C4 Persistence/Security:** survive reload, corrupt data → graceful trial fallback.
 - [ ] **C5 Packaging:** macOS bundle/rpath/codesign valid; Windows/Linux sesuai scope aktif.
+- [ ] **C5 Packaging Evidence:** tidak ada absolute path (`otool -L`, `dumpbin`, `ldd` bersih).
 - [ ] **C6 Testing:** regression hijau + tes lisensi baru lengkap.
 
 Tes minimum wajib:
@@ -84,4 +87,10 @@ Tes minimum wajib:
 
 ## G. ESCALATION GATE
 
-- [ ] Jika ada ketidakpastian pada audio-thread contract: **STOP**, minta review, baru lanjut.
+- [ ] Jika ada **keraguan sekecil apa pun** soal audio-thread contract: **STOP, revert, review**.
+
+---
+
+## H. ENFORCEMENT RULE
+
+- [ ] Checklist dilanggar = **PR tidak direview**.
