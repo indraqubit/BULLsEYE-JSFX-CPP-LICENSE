@@ -1,130 +1,79 @@
 #pragma once
 
-#include <juce_core/juce_core.h>  // For juce::String
+#include <cstddef>
 
-/**
- * Model Layer Single Source of Truth
- * 
- * Contains all model-related constants:
- * - Parameter IDs and names
- * - Mode enums
- * - Helper functions for mode logic
- * 
- * Usage: Include in all files that need parameter definitions or mode logic.
- * Never hardcode parameter IDs or mode values.
- */
 namespace ModelSSOT
 {
-    // ========================================================================
-    // PARAMETER DEFINITIONS
-    // ========================================================================
-    
+    // ==========================================
+    // PARAMETER IDENTIFIERS
+    // ==========================================
     namespace ParameterIDs
     {
-        // TODO: Replace with your parameter IDs
-        constexpr const char* MUTE_STATE = "muteState";
-        constexpr const char* MUTE_MODE = "muteMode";
-        constexpr const char* INVERT_ENABLED = "invertEnabled";
+        constexpr const char* CONTENT_TYPE = "contentType";
     }
-    
+
+    // ==========================================
+    // PARAMETER NAMES
+    // ==========================================
     namespace ParameterNames
     {
-        // TODO: Replace with your parameter names
-        constexpr const char* MUTE_STATE = "Mute State";
-        constexpr const char* MUTE_MODE = "Mute Mode";
-        constexpr const char* INVERT_ENABLED = "Invert";
+        constexpr const char* CONTENT_TYPE = "Content Type";
     }
-    
-    // ========================================================================
-    // MODE ENUMS
-    // ========================================================================
-    
-    // TODO: Replace with your modes
-    enum class YourMode
+
+    // ==========================================
+    // PARAMETER RANGES
+    // ==========================================
+    namespace ParameterRanges
     {
-        ModeA = 0,
-        ModeB = 1,
-        ModeC = 2,
-        ModeD = 3
+        constexpr float CONTENT_TYPE_MIN = 0.0f;
+        constexpr float CONTENT_TYPE_MAX = 2.0f;
+        constexpr float CONTENT_TYPE_DEFAULT = 1.0f;  // Music Drums (-8 LUFS)
+    }
+
+    // ==========================================
+    // MODE ENUMS
+    // ==========================================
+    enum class ContentType
+    {
+        MusicNonDrums = 0,  // -11 LUFS
+        MusicDrums = 1,      // -8 LUFS
+        CinemaTrailer = 2    // -14 LUFS
     };
-    
-    constexpr int MODE_COUNT = 4;
-    
-    // ========================================================================
-    // HELPER FUNCTIONS
-    // ========================================================================
-    
+
+    constexpr int CONTENT_TYPE_COUNT = 3;
+
+    // ==========================================
+    // MODE HELPERS
+    // ==========================================
     namespace Helpers
     {
-        /**
-         * Get mode name for display
-         * TODO: Customize with your mode names
-         */
-        inline juce::String getModeName(YourMode mode)
+        constexpr ContentType intToContentType(int value)
         {
-            switch (mode)
+            return static_cast<ContentType>(
+                (value >= 0 && value < CONTENT_TYPE_COUNT) ? value : 1
+            );
+        }
+
+        constexpr const char* contentTypeToString(ContentType type)
+        {
+            switch (type)
             {
-                case YourMode::ModeA: return "Mode A";
-                case YourMode::ModeB: return "Mode B";
-                case YourMode::ModeC: return "Mode C";
-                case YourMode::ModeD: return "Mode D";
-                default: return "Unknown";
+                case ContentType::MusicNonDrums:  return "Music Non-drums";
+                case ContentType::MusicDrums:     return "Music Drums";
+                case ContentType::CinemaTrailer:   return "Cinema/Trailer";
+                default:                           return "Unknown";
             }
         }
-        
-        /**
-         * Get mode description for UI display
-         * TODO: Customize with your mode descriptions
-         */
-        inline juce::String getModeDescription(YourMode mode)
+
+        constexpr double getTargetLUFS(ContentType type)
         {
-            switch (mode)
+            switch (type)
             {
-                case YourMode::ModeA: 
-                    return "Description for Mode A";
-                case YourMode::ModeB: 
-                    return "Description for Mode B";
-                case YourMode::ModeC: 
-                    return "Description for Mode C";
-                case YourMode::ModeD: 
-                    return "Description for Mode D";
-                default: return "";
+                case ContentType::MusicNonDrums:  return -11.0;
+                case ContentType::MusicDrums:      return -8.0;
+                case ContentType::CinemaTrailer:   return -14.0;
+                default:                           return -8.0;
             }
-        }
-        
-        /**
-         * Calculate effective parameter value with invert logic
-         * TODO: Customize with your invert logic
-         */
-        inline bool getEffectiveValue(bool value, bool invertEnabled)
-        {
-            return invertEnabled ? !value : value;
-        }
-        
-        /**
-         * Validate mode index
-         */
-        inline bool isValidMode(int modeIndex)
-        {
-            return modeIndex >= 0 && modeIndex < MODE_COUNT;
-        }
-        
-        /**
-         * Convert mode index to enum
-         */
-        inline YourMode intToMode(int modeIndex)
-        {
-            if (isValidMode(modeIndex))
-                return static_cast<YourMode>(modeIndex);
-            return YourMode::ModeA;  // Default
-        }
-        
-        /**
-         * Convert enum to mode index
-         */
-        inline int modeToInt(YourMode mode)
-        {
-            return static_cast<int>(mode);
         }
     }
 }

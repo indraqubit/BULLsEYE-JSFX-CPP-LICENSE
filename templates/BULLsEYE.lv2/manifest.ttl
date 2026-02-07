@@ -1,0 +1,96 @@
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix pset: <http://lv2plug.in/ns/lv2pset#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix unit: <http://lv2plug.in/ns/lv2units#> .
+
+<https://bullseye.lv2#BULLsEYE>
+    a lv2:Plugin ;
+    lv2:binary <BULLsEYE> ;
+    doap:name "BULLsEYE" ;
+    doap:description "LUFS-I Gated Loudness Meter with True Peak Detection" ;
+    doap:maker "IQ" ;
+    doap:version "1.2.1" ;
+    lv2:optionalFeature lv2:hardRTCapable ;
+    lv2:port [
+        lv2:symbol "input" ;
+        lv2:name "Audio Input" ;
+        lv2:direction lv2:Input ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#AudioPort> ;
+        lv2:index 0 ;
+        lv2:minimum -1.0 ;
+        lv2:maximum 1.0
+    ] ;
+    lv2:port [
+        lv2:symbol "output" ;
+        lv2:name "Audio Output" ;
+        lv2:direction lv2:Output ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#AudioPort> ;
+        lv2:index 1 ;
+        lv2:minimum -1.0 ;
+        lv2:maximum 1.0
+    ] ;
+    lv2:port [
+        lv2:symbol "gain" ;
+        lv2:name "Gain" ;
+        lv2:direction lv2:Input ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 2 ;
+        lv2:minimum -24.0 ;
+        lv2:maximum 24.0 ;
+        lv2:default 0.0 ;
+        rdfs:comment "Input gain in dB"
+    ] ;
+    lv2:port [
+        lv2:symbol "target" ;
+        lv2:name "Target Level" ;
+        lv2:direction lv2:Input ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 3 ;
+        lv2:minimum -31.0 ;
+        lv2:maximum -5.0 ;
+        lv2:default -14.0 ;
+        rdfs:comment "Target loudness level in LUFS"
+    ] ;
+    lv2:port [
+        lv2:symbol "mode" ;
+        lv2:name "Measurement Mode" ;
+        lv2:direction lv2:Input ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 4 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 3.0 ;
+        lv2:default 0.0 ;
+        rdfs:comment "0: Momentary, 1: Short-term, 2: Integrated, 3: True Peak"
+    ] ;
+    lv2:port [
+        lv2:symbol "reset" ;
+        lv2:name "Reset" ;
+        lv2:direction lv2:Input ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 5 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+        lv2:default 0.0 ;
+        rdfs:comment "Reset measurement (1 = reset)"
+    ] ;
+    lv2:port [
+        lv2:symbol "meter" ;
+        lv2:name "Meter Output" ;
+        lv2:direction lv2:Output ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 6 ;
+        lv2:minimum -70.0 ;
+        lv2:maximum 0.0 ;
+        rdfs:comment "Current meter reading in LUFS"
+    ] ;
+    lv2:port [
+        lv2:symbol "true_peak" ;
+        lv2:name "True Peak Output" ;
+        lv2:direction lv2:Output ;
+        lv2:connectionPort <http://lv2plug.in/ns/lv2core#ControlPort> ;
+        lv2:index 7 ;
+        lv2:minimum -20.0 ;
+        lv2:maximum 0.0 ;
+        rdfs:comment "True peak level in dBTP"
+    ] .

@@ -2,88 +2,83 @@
 #include "PluginEditor.h"
 
 // ========================================================================
+// CONSTRUCTOR / DESTRUCTOR
+// ========================================================================
+
+BULLsEYEProcessor::BULLsEYEProcessor()
+    : juce::AudioProcessor(BusesProperties()
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true))
+    , apvts(*this, nullptr, "Parameters", createParameterLayout())
+{
+}
+
+BULLsEYEProcessor::~BULLsEYEProcessor() = default;
+
+// ========================================================================
 // PARAMETER LAYOUT
 // ========================================================================
 
-juce::AudioProcessorValueTreeState::ParameterLayout YourProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout BULLsEYEProcessor::createParameterLayout()
 {
-    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
-    
-    // TODO: Add your parameters here
-    
-    // Example: Boolean parameter
-    // params.push_back(std::make_unique<juce::AudioParameterBool>(
-    //     ModelSSOT::ParameterIDs::YOUR_PARAM,
-    //     ModelSSOT::ParameterNames::YOUR_PARAM,
-    //     false  // default value
-    // ));
-    
-    // Example: Choice parameter
-    // params.push_back(std::make_unique<juce::AudioParameterChoice>(
-    //     ModelSSOT::ParameterIDs::YOUR_MODE,
-    //     ModelSSOT::ParameterNames::YOUR_MODE,
-    //     juce::StringArray("Mode A", "Mode B", "Mode C"),
-    //     0  // default index
-    // ));
-    
-    // Example: Float parameter
-    // params.push_back(std::make_unique<juce::AudioParameterFloat>(
-    //     ModelSSOT::ParameterIDs::YOUR_GAIN,
-    //     ModelSSOT::ParameterNames::YOUR_GAIN,
-    //     juce::NormalisableRange<float>(-60.0f, 6.0f, 0.1f, 0.3f),  // min, max, step, skew
-    //     0.0f  // default value
-    // ));
-    
-    return { params.begin(), params.end() };
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    // Content Type (Choice parameter)
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ModelSSOT::ParameterIDs::CONTENT_TYPE,
+        ModelSSOT::ParameterNames::CONTENT_TYPE,
+        juce::StringArray({
+            "Music Non-drums (-11 LUFS)",
+            "Music Drums (-8 LUFS)",
+            "Cinema/Trailer (-14 LUFS)"
+        }),
+        1  // Default: Music Drums
+    ));
+
+    return layout;
 }
 
 // ========================================================================
-// CONSTRUCTOR
+// PARAMETER CALLBACKS
 // ========================================================================
 
-YourProcessor::YourProcessor()
-    : apvts(*this, nullptr, "PARAMETERS", createParameterLayout())
+void BULLsEYEProcessor::contentTypeChanged()
 {
+    int choiceIndex = apvts.getRawParameterValue(ModelSSOT::ParameterIDs::CONTENT_TYPE)->load();
+    ModelSSOT::ContentType type = ModelSSOT::Helpers::intToContentType(choiceIndex);
+    dspCore.setContentType(type);
 }
 
-YourProcessor::~YourProcessor()
-{
-}
-
 // ========================================================================
-// PREPARE TO PLAY
+// JUCE LIFECYCLE
 // ========================================================================
 
-void YourProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void BULLsEYEProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
-    
-    // Reset DSP state
+    // Initialize DSP core
+    dspCore.setSampleRate(sampleRate);
     dspCore.reset();
-    
-    // TODO: Add any sample-rate dependent initialization
+
+    // Reset transport state tracking
+    wasPlaying = false;
+
+    // Notify parameter changes
+    contentTypeChanged();
 }
 
-void YourProcessor::releaseResources()
+void BULLsEYEProcessor::releaseResources()
 {
-    // TODO: Release any resources (open files, etc.)
+    // Nothing specific to release
 }
-
-// ========================================================================
-// CHANNEL CONFIGURATION
-// ========================================================================
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool YourProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+bool BULLsEYEProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-    // TODO: Customize for your plugin
-    
-    // Example: Support mono and stereo
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    // Only support stereo
+    if (layouts.getMainInputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
     return true;
@@ -91,151 +86,87 @@ bool YourProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 #endif
 
 // ========================================================================
-// PROCESS BLOCK
+// PROCESSING
 // ========================================================================
 
-void YourProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void BULLsEYEProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
-    juce::ignoreUnused(midiMessages);
     juce::ScopedNoDenormals noDenormals;
+
+    // Transport state detection using DAW playhead (reliable across all DAWs)
+    // Matches JSFX behavior: @init called on transport stop→play
+    bool isCurrentlyPlaying = false;
     
-    // TODO: Implement your audio processing
+    if (auto* playHead = getPlayHead())
+    {
+        if (auto position = playHead->getPosition())
+        {
+            isCurrentlyPlaying = position->getIsPlaying();
+            
+            // Detect stopped→playing transition
+            if (isCurrentlyPlaying && !wasPlaying)
+            {
+                // Transport just started: reset all measurements
+                dspCore.reset();
+            }
+            
+            wasPlaying = isCurrentlyPlaying;
+        }
+    }
     
-    // Example: Read parameters
-    // const bool yourParam = *apvts.getRawParameterValue(ModelSSOT::ParameterIDs::YOUR_PARAM) > 0.5f;
-    // const int yourMode = static_cast<int>(*apvts.getRawParameterValue(ModelSSOT::ParameterIDs::YOUR_MODE));
-    
-    // Example: Update DSP state
-    // dspCore.setMode(static_cast<ModelSSOT::YourMode>(yourMode));
-    
-    // Example: Process audio
-    // for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
-    // {
-    //     auto* data = buffer.getWritePointer(ch);
-    //     for (int i = 0; i < buffer.getNumSamples(); ++i)
-    //     {
-    //         dspCore.process(data[i]);
-    //     }
-    // }
-}
+    // Poll content type parameter each block (equivalent to JSFX @slider)
+    contentTypeChanged();
 
-// ========================================================================
-// EDITOR
-// ========================================================================
+    // Get input and output pointers
+    float* leftIn = buffer.getWritePointer(0);
+    float* rightIn = buffer.getWritePointer(1);
 
-juce::AudioProcessorEditor* YourProcessor::createEditor()
-{
-    return new YourEditor(*this);
-}
-
-bool YourProcessor::hasEditor() const
-{
-    return true;
-}
-
-// ========================================================================
-// PLUGIN INFO
-// ========================================================================
-
-const juce::String YourProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool YourProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool YourProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool YourProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double YourProcessor::getTailLengthSeconds() const
-{
-    // TODO: Set appropriate tail length
-    return 0.0;
-}
-
-// ========================================================================
-// PROGRAMS
-// ========================================================================
-
-int YourProcessor::getNumPrograms()
-{
-    return 1;  // TODO: Set number of programs
-}
-
-int YourProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void YourProcessor::setCurrentProgram(int index)
-{
-    juce::ignoreUnused(index);
-}
-
-const juce::String YourProcessor::getProgramName(int index)
-{
-    juce::ignoreUnused(index);
-    return {};
-}
-
-void YourProcessor::changeProgramName(int index, const juce::String& newName)
-{
-    juce::ignoreUnused(index, newName);
+    // Process each sample
+    for (int i = 0; i < buffer.getNumSamples(); i++)
+    {
+        dspCore.process(leftIn[i], rightIn[i]);
+    }
 }
 
 // ========================================================================
 // STATE
 // ========================================================================
 
-void YourProcessor::getStateInformation(juce::MemoryBlock& destData)
+void BULLsEYEProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // TODO: Implement state saving
-    
-    // Example: Save APVTS state
-    // auto state = apvts.copyState();
-    // std::unique_ptr<juce::XmlElement> xml(state.createXml());
-    // copyXmlToBinary(*xml, destData);
+    // Save APVTS state
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
-void YourProcessor::setStateInformation(const void* data, int sizeInBytes)
+void BULLsEYEProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // TODO: Implement state loading
-    
-    // Example: Load APVTS state
-    // std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
-    // if (xmlState.get() != nullptr && xmlState->hasTagName(apvts.state.getType()))
-    // {
-    //     apvts.replaceState(juce::ValueTree::fromXml(*xmlState));
-    // }
+    // Restore APVTS state
+    std::unique_ptr<juce::XmlElement> xml(getXmlFromBinary(data, sizeInBytes));
+
+    if (xml && xml->hasTagName(apvts.state.getType()))
+    {
+        apvts.replaceState(juce::ValueTree::fromXml(*xml));
+        contentTypeChanged();
+    }
 }
 
 // ========================================================================
 // FACTORY
 // ========================================================================
 
+// This creates new instances of the plugin
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new YourProcessor();
+    return new BULLsEYEProcessor();
+}
+
+// ========================================================================
+// EDITOR
+// ========================================================================
+
+juce::AudioProcessorEditor* BULLsEYEProcessor::createEditor()
+{
+    return new BULLsEYEEditor(*this);
 }

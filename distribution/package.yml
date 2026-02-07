@@ -1,0 +1,202 @@
+#==============================================================================
+# BULLsEYE Homebrew Cask Configuration
+#==============================================================================
+# Purpose: Homebrew Cask definition for easy macOS installation
+# Usage: brew install --cask bullseye
+#==============================================================================
+
+# For Homebrew Cask, use caskroom/homebrew-cask tap structure
+# This file documents the structure for a future Homebrew Cask submission
+# 
+# To submit to Homebrew, you would:
+# 1. Fork homebrew/homebrew-cask on GitHub
+# 2. Add a Casks/bullseye.rb file using this template
+# 3. Create a pull request
+
+#==============================================================================
+# CASK DEFINITION (bullseye.rb)
+#==============================================================================
+# cask "bullseye" do
+#   version "1.0.0"
+#   sha256 "SHA256_HASH_GOES_HERE"  # Calculate with: shasum -a 256 BULLsEYE-1.0.0-macOS.dmg
+# 
+#   # GitHub release URL pattern
+#   url "https://github.com/indraqadarsih/BULLsEYE-JSFX-CPP/releases/download/v#{version}/BULLsEYE-#{version}-macOS.dmg"
+#   name "BULLsEYE"
+#   desc "Professional loudness normalization and dynamic range control plugin"
+#   homepage "https://github.com/indraqadarsih/BULLsEYE-JSFX-CPP"
+# 
+#   # Auto-updates (optional, remove if not using auto-updates)
+#   # auto_updates true
+# 
+#   # Universal binary (remove if Apple Silicon only)
+#   # arch universal: [:x86_64, :arm64]
+# 
+#   # Installation instructions
+#   depends_on macos: ">= :mojave"
+#   depends_on cask: "flying-sphynx" # Optional dependency
+# 
+#   # Files to zap on uninstall
+#   zap trash: [
+#     "~/Library/Application Support/bullseye",
+#     "~/Library/Audio/Plug-Ins/Components/BULLsEYE.component",
+#     "~/Library/Audio/Plug-Ins/VST3/BULLsEYE.vst3",
+#     "~/Library/Preferences/com.bullseye.plist",
+#   ]
+# 
+#   # Signature verification (if code signing)
+#   # if MacOS.version >= :catalina
+#   #   pkg util: ["BULLsEYE.pkg"], allow_untrusted: false
+#   # end
+# end
+#==============================================================================
+
+#==============================================================================
+# ALTERNATIVE: Homebrew Formula for source installation
+#==============================================================================
+# Formula bullseye.rb:
+#
+# class Bullseye < Formula
+#   desc "Professional loudness normalization and dynamic range control plugin"
+#   homepage "https://github.com/indraqadarsih/BULLsEYE-JSFX-CPP"
+#   url "https://github.com/indraqadarsih/BULLsEYE-JSFX-CPP/archive/refs/tags/v1.0.0.tar.gz"
+#   sha256 "SHA256_HASH_GOES_HERE"
+#   license "MIT"
+#   revision 1
+# 
+#   depends_on "cmake" => :build
+#   depends_on "juce" => :build
+# 
+#   def install
+#     system "cmake", "-B", "build", "-DCMAKE_BUILD_TYPE=Release", *std_cmake_args
+#     system "cmake", "--build", "build"
+#   end
+# end
+#==============================================================================
+
+#==============================================================================
+# Distribution Package Metadata
+#==============================================================================
+name: BULLsEYE
+description: Professional loudness normalization and dynamic range control plugin
+version: 1.0.0
+author: Indra Qadarsih
+license: MIT
+homepage: https://github.com/indraqadarsih/BULLsEYE-JSFX-CPP
+
+# Package Information
+packages:
+  macOS-AU:
+    file: BULLsEYE-1.0.0-macOS-AU.zip
+    format: ZIP
+    architecture: universal
+  macOS-VST3:
+    file: BULLsEYE-1.0.0-macOS-VST3.zip
+    format: ZIP
+    architecture: universal
+  macOS-DMG:
+    file: BULLsEYE-1.0.0-macOS.dmg
+    format: DMG
+    architecture: universal
+  Windows-VST3:
+    file: BULLsEYE-1.0.0-Windows-VST3.zip
+    format: ZIP
+    architecture: x86_64
+  Linux-VST3:
+    file: BULLsEYE-1.0.0-Linux-VST3.zip
+    format: ZIP
+    architecture: x86_64
+
+# Installation Paths
+installation_paths:
+  macOS:
+    AU: ~/Library/Audio/Plug-Ins/Components/
+    VST3: ~/Library/Audio/Plug-Ins/VST3/
+    System-AU: /Library/Audio/Plug-Ins/Components/
+    System-VST3: /Library/Audio/Plug-Ins/VST3/
+  Windows:
+    VST3: C:\Program Files\Common Files\VST3\
+    User-VST3: C:\Users\%USERNAME%\Documents\VST3\
+  Linux:
+    VST3: ~/.vst3/
+    System-VST3: /usr/lib/vst3/
+
+# System Requirements
+requirements:
+  macOS:
+    minimum: "10.14 (Mojave)"
+    recommended: "11.0 (Big Sur)"
+  Windows:
+    minimum: "10 (64-bit)"
+    recommended: "11"
+  Linux:
+    minimum: "Ubuntu 20.04, Fedora 35"
+    recommended: "Ubuntu 22.04 LTS"
+
+# Checksums (to be filled after building)
+checksums:
+  macOS-AU: "TODO: Add SHA256 after build"
+  macOS-VST3: "TODO: Add SHA256 after build"
+  macOS-DMG: "TODO: Add SHA256 after build"
+  Windows-VST3: "TODO: Add SHA256 after build"
+  Linux-VST3: "TODO: Add SHA256 after build"
+
+# Release Notes
+release_notes:
+  "1.0.0": |
+    Initial release of BULLsEYE plugin.
+    
+    Features:
+    - Loudness normalization (LUFS targeting)
+    - Dynamic range control
+    - Real-time metering
+    - Multiple plugin formats (AU, VST3)
+    - Cross-platform support (macOS, Windows, Linux)
+    
+    Formats:
+    - macOS: Audio Unit (AU), VST3
+    - Windows: VST3
+    - Linux: VST3
+
+# Homebrew Tap Information
+homebrew_tap:
+  cask_name: bullseye
+  tap_url: https://github.com/homebrew/homebrew-cask
+  formula_name: bullseye
+  tap_repo: homebrew/homebrew-cask
+
+# Version Management
+versioning:
+  scheme: semantic
+  auto_updates: false
+  github_releases: true
+  git_tags: true
+
+#==============================================================================
+# Build Commands Reference
+#==============================================================================
+# 
+# To build all distribution packages:
+# 
+# 1. Build the plugins:
+#    cd /path/to/BULLsEYE-JSFX-CPP
+#    mkdir -p build && cd build
+#    cmake .. -DCMAKE_BUILD_TYPE=Release
+#    cmake --build . --config Release
+# 
+# 2. Copy artifacts:
+#    cp -R BULLsEYE.component BULLsEYE.vst3 BULLsEYE_artefacts/
+# 
+# 3. Create DMG:
+#    cd ../build
+#    ./create_dmg.sh
+# 
+# 4. Create ZIPs:
+#    ./create_zip.sh --all
+# 
+# 5. Calculate checksums:
+#    shasum -a 256 distribution/*.dmg distribution/*.zip
+# 
+# 6. Update this file with checksums
+# 
+#==============================================================================

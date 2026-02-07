@@ -1,0 +1,186 @@
+name: Windows VST3 Build
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - 'CMakeLists.txt'
+      - '.github/workflows/windows-build.yml'
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    name: Build Windows VST3
+    runs-on: windows-latest
+    
+    defaults:
+      run:
+        shell: cmd
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 1
+        
+    - name: Setup CMake
+      uses: cmake-actions/setup-cmake@v1
+      with:
+        cmake-version: '3.28.1'
+        
+    - name: Install VST3 SDK (if needed)
+      run: |
+        if not exist "${{ github.workspace }}\modules\JUCE\modules\juce_core" (
+          echo "JUCE submodule not properly initialized"
+          exit 1
+        )
+        
+    - name: Configure Visual Studio Build
+      run: |
+        cmake .. -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+        
+    - name: Build Release
+      run: cmake --build . --config Release --parallel
+      
+    - name: Build Debug
+      run: cmake --build . --config Debug --parallel
+      
+    - name: Upload Release Artifacts
+      if: github.event_name == 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: BULLsEYE-windows-vst3
+        path: |
+          build/BULLsEYE.vst3
+          build/*.pdb
+        compression-level: 9
+        
+    - name: Upload Debug Artifacts
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v4
+      with:
+        name: BULLsEYE-windows-debug
+        path: |
+          build/BULLsEYE.vst3
+          build/*.pdb
+        compression-level: 0
+        
+    - name: Verify Build
+      run: |
+        if exist "build\BULLsEYE.vst3" (
+          echo "Build successful!"
+          dir /s /b "build\BULLsEYE.vst3"
+        ) else (
+          echo "Build artifacts not found!"
+          exit 1
+        )
+        
+  test:
+    name: Test Build
+    needs: build
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: BULLsEYE-windows-debug
+        path: build
+        
+    - name: Verify Plugin Structure
+      run: |
+        echo "Verifying VST3 bundle structure..."
+        if exist "build\BULLsEYE.vst3\Contents\x64-win" (
+          echo "Windows x64 binary found!"
+          dir "build\BULLsEYE.vst3\Contents\x64-win"
+        ) else (
+          echo "VST3 structure verification failed!"
+          dir /s /b "build\BULLsEYE.vst3"
+          exit 1
+        )
+        
+  validate:
+    name: Validate CMake Configuration
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 1
+        
+    - name: Setup CMake
+      uses: cmake-actions/setup-cmake@v1
+      with:
+        cmake-version: '3.28.1'
+        
+    - name: Validate CMake
+      run: cmake -S . -B build_validate -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        
+    - name: Check CMake Syntax
+      run: |
+        cmake --build build_validate --target help || echo "Configuration valid"
+        
+    - name: Upload compile_commands.json
+      uses: actions/upload-artifact@v4
+      with:
+        name: compile-commands-windows
+        path: build_validate/compile_commands.json
+        
+  create-release:
+    name: Create Release Package
+    needs: [build, test, validate]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: BULLsEYE-windows-vst3
+        path: release/
+        
+    - name: Create Release Package
+      run: |
+        mkdir -p release_package
+        cp -r release/* release_package/
+        cd release_package
+        # Create metadata
+        echo "BULLsEYE VST3 Plugin - Windows" > README.txt
+        echo "Version: ${{ github.event.release.tag_name }}" >> README.txt
+        cd ..
+        tar -czvf BULLsEYE-windows-v${{ github.event.release.tag_name }}.tar.gz release_package
+        
+    - name: Upload Release Package
+      uses: softprops/action-gh-release@v2
+      with:
+        files: BULLsEYE-windows-*.tar.gz
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+  cleanup:
+    name: Cleanup Build Artifacts
+    needs: [build, test, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clean up build directory
+      run: |
+        echo "Cleaning up build artifacts..."
+        rm -rf build build_validate
+        
+    - name: Summary
+      run: |
+        echo "Windows VST3 build workflow completed."
+        echo "Status: ${{ job.status }}"

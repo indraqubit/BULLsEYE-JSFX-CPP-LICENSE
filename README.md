@@ -1,6 +1,6 @@
 # Portable JSFX to JUCE Migration Template
 
-**Version:** 1.0.0  
+**Version:** 2.0.0  
 **Date:** 2025-12-20  
 **JUCE Version:** 8  
 **C++ Standard:** C++17
@@ -9,7 +9,7 @@
 
 ## Overview
 
-This is a **portable, drop-in template** for migrating JSFX plugins to JUCE 8/C++17. It includes all best practices, frameworks, and patterns developed during the IntelliMute migration project.
+This is a **portable, drop-in template** for migrating JSFX plugins to JUCE 8/C++17. It includes all best practices, frameworks, and patterns developed during IntelliMute and BULLsEYE migration projects.
 
 ## Features
 
@@ -19,12 +19,13 @@ This is a **portable, drop-in template** for migrating JSFX plugins to JUCE 8/C+
 - **Professional UI**: Modern dark theme with branding
 - **CMake Build System**: Modern build configuration
 - **Complete Documentation**: Templates for all phases
+- **Comprehensive Testing**: Integration tests and DAW testing procedures
 
 ## ⚠️ IMPORTANT: Read First
 
 Before starting your migration, **read these documents in order:**
 
-1. **PORTING_GUIDE.md** (30 min) — Framework migration strategy + the 15 laws that prevent bugs
+1. **PORTING_GUIDE.md** (30 min) — Framework migration strategy + 15 laws that prevent bugs
 2. **MIGRATION_LAWS.md** (30 min) — Detailed laws with incident examples and templates
 3. **MIGRATION_PLAN.md** (10 min) — Roadmap template for your specific project
 4. **REFERENCE.md** (10 min) — Algorithm documentation (if doing DSP port)
@@ -64,6 +65,38 @@ cmake --build .
 
 ---
 
+## Completed Projects
+
+This template has been successfully used to migrate the following plugins:
+
+### BULLsEYE - LUFS-I Gated Loudness Meter
+
+**Status:** Complete  
+**Version:** 2.0.0  
+**Migration Date:** 2026-02-06  
+**Release Date:** 2026-02-07  
+**Plugin Code:** BULL  
+**Company:** IQ  
+
+**Key Features:**
+- ITU-R BS.1770 compliant K-weighting filters
+- Gated integration with absolute (-70 LUFS) and relative (L-10) thresholds
+- True Peak detection with 4x oversampling and Hermite interpolation
+- Three content type modes (Music Non-drums, Music Drums, Cinema/Trailer)
+- Real-time LED strip meter with 20 segments
+- Comprehensive integration test suite (42 tests)
+
+**Build Artifacts:**
+- AU: 8.7 MB
+- VST3: 9.0 MB
+
+**Documentation:**
+- `REFERENCE.md` - Complete parameter documentation
+- `LEARNINGS.md` - Development notes and decisions
+- `DAW_TESTING.md` - Comprehensive DAW testing procedures
+
+---
+
 ## Project Structure
 
 ```
@@ -72,6 +105,8 @@ portable-jsfx-to-juce-migration/
 ├── REFERENCE.md                # Plugin identity & constants (SSOT)
 ├── LEARNINGS.md                # Development notes
 ├── MIGRATION_PLAN.md           # Migration roadmap template
+├── DAW_TESTING.md              # DAW testing procedures
+├── LUFS_BOOTSTRAP.md           # LUFS meter implementation guide
 │
 ├── 📁 jsfx/                    # ← YOUR ORIGINAL JSFX SOURCE FILES
 │   └── *.jsfx                  # Original JSFX plugins (reference only)
@@ -91,7 +126,8 @@ portable-jsfx-to-juce-migration/
 │   │   ├── ModeSelectorComponent.h/cpp
 │   │   ├── MuteButtonComponent.h/cpp
 │   │   ├── InvertToggleComponent.h/cpp
-│   │   └── ModeDescriptionComponent.h/cpp
+│   │   ├── ModeDescriptionComponent.h/cpp
+│   │   └── LEDStripMeter.h/cpp
 │   │
 │   ├── PluginProcessor.h/cpp   # Main audio processor
 │   └── PluginEditor.h/cpp      # Main UI editor
@@ -101,17 +137,23 @@ portable-jsfx-to-juce-migration/
 │   ├── *.component/           # AU plugin (macOS)
 │   └── *.so/                  # LV2 plugin (Linux)
 │
-├── modules/
+├── 📁 modules/
 │   └── JUCE/                   # JUCE as submodule/symlink
 │
-├── templates/                 # Code templates
+├── 📁 templates/               # Code templates
 │   ├── COMPONENT_TEMPLATE.md
 │   ├── DSP_TEMPLATE.md
 │   ├── SSOT_TEMPLATE.md
 │   └── REVIEW_TEMPLATE.md
 │
-└── .cursor/
-    └── rules                   # AI assistant rules
+├── 📁 tests/                   # Integration tests
+│   ├── Integration/
+│   │   └── TestBULLsEYEIntegration.cpp
+│   ├── run_tests.sh
+│   └── CMakeLists.txt
+│
+└── 📁 docs/                    # Additional documentation
+    └── (project-specific docs)
 ```
 
 ---
@@ -126,6 +168,7 @@ portable-jsfx-to-juce-migration/
 | **DSP Implementation** | `Source/DSP/` | Audio processing logic |
 | **UI Components** | `Source/Components/` | User interface elements |
 | **Build Output** | `build/` | Compiled plugins (VST3/AU/LV2) |
+| **Integration Tests** | `tests/` | Test suite |
 
 ---
 
@@ -312,39 +355,61 @@ Only implement what's needed:
 
 ### Phase 1: Foundation
 
-- [ ] Set up project structure
-- [ ] Create SSOT files
-- [ ] Configure CMake
-- [ ] Set up metadata (TUI tool)
-- [ ] Create basic processor skeleton
+- [x] Set up project structure
+- [x] Create SSOT files
+- [x] Configure CMake
+- [x] Set up JUCE submodule
+- [x] Create basic processor skeleton
+
+**Milestone:** Project builds successfully
+
+---
 
 ### Phase 2: DSP Core
 
-- [ ] Implement TETRIS-compliant processor
-- [ ] Implement mode logic
-- [ ] Implement parameter handling
-- [ ] Implement audio processing
+- [x] Implement TETRIS-compliant processor
+- [x] Migrate mode logic
+- [x] Implement parameter handling
+- [x] Implement audio processing
+- [x] Test DSP accuracy
+
+**Milestone:** Audio output matches JSFX
+
+---
 
 ### Phase 3: UI Implementation
 
-- [ ] Create PluginEditor base
-- [ ] Create UI components
-- [ ] Connect components to APVTS
-- [ ] Implement visual feedback
+- [x] Create PluginEditor base
+- [x] Create UI components
+- [x] Connect components to APVTS
+- [x] Implement visual feedback
+- [x] Polish UI design
+
+**Milestone:** UI matches or improves on JSFX
+
+---
 
 ### Phase 4: Integration & Polish
 
-- [ ] Test all functionality
-- [ ] Handle edge cases
-- [ ] Optimize performance
-- [ ] Polish UI
+- [x] Test all functionality
+- [x] Handle edge cases
+- [x] Optimize performance
+- [x] Add LUFS meter
+- [x] Polish UI
+
+**Milestone:** Plugin is production-ready
+
+---
 
 ### Phase 5: Testing & Validation
 
-- [ ] Unit testing
-- [ ] Integration testing
-- [ ] DAW testing
-- [ ] Performance testing
+- [x] Unit testing
+- [x] Integration testing
+- [x] DAW testing
+- [x] Performance testing
+- [x] Final review
+
+**Milestone:** Plugin passes all tests
 
 ---
 
@@ -360,6 +425,10 @@ Only implement what's needed:
 
 - `metadata_dashboard.py` - TUI dashboard
 - `generate_html_dashboard.py` - HTML dashboard
+
+### Testing Scripts
+
+- `tests/run_tests.sh` - Integration test runner
 
 ---
 
@@ -448,13 +517,25 @@ mkdir build
 cd build
 
 # Configure with JUCE symlink
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0"
 
 # Build
 cmake --build . --config Release
 
 # Install
 cmake --build . --target install
+```
+
+**Universal Binary Support:**
+```bash
+# Build universal binary (Intel + Apple Silicon)
+./build.sh universal
+
+# Verify architecture
+lipo -info ~/Library/Audio/Plug-Ins/VST3/BULLsEYE.vst3/Contents/x86_64/BULLsEYE
+# Output: Architectures in the fat file: BULLsEYE are: x86_64 arm64
 ```
 
 ### Verification
@@ -539,7 +620,7 @@ namespace Colors
 
 ## Contributing
 
-This template is based on the IntelliMute migration project. To contribute:
+This template is based on the IntelliMute and BULLsEYE migration projects. To contribute:
 
 1. Fork the repository
 2. Make improvements
@@ -587,6 +668,7 @@ MIT License - Use freely for your projects.
 - **Virtue DNA Framework**: Internal development philosophy
 - **TETRIS Principles**: Thread-safe DSP architecture
 - **BULLsEYE Project**: Real-world case study (Feb 2026)
+- **ITU-R BS.1770**: International loudness standard
 
 ---
 

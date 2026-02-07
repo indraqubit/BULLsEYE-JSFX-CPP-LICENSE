@@ -17,7 +17,7 @@ cmake_build/
 Thumbs.db
 
 # JUCE
-modules/JUCE/
+# modules/JUCE (removed from ignore)
 !modules/JUCE/.gitkeep
 
 # Generated files

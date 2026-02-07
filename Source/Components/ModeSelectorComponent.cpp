@@ -1,5 +1,4 @@
 #include "ModeSelectorComponent.h"
-#include "../SSOT/UISSOT.h"
 
 // ========================================================================
 // CONSTRUCTOR
@@ -7,24 +6,23 @@
 
 ModeSelectorComponent::ModeSelectorComponent()
 {
-    // Setup previous button
-    prevButton.setButtonText("<");
-    prevButton.onClick = [this] { onPrevButtonClicked(); };
-    addAndMakeVisible(prevButton);
-    
-    // Setup next button
-    nextButton.setButtonText(">");
-    nextButton.onClick = [this] { onNextButtonClicked(); };
-    addAndMakeVisible(nextButton);
-    
-    // Setup mode label
-    modeLabel.setJustificationType(juce::Justification::centred);
-    modeLabel.setFont(juce::FontOptions().withHeight(14.0f));
-    modeLabel.setColour(juce::Label::textColourId, UISSOT::Colors::TEXT_PRIMARY());
+    // Setup label
+    modeLabel.setText(UISSOT::Strings::contentTypeLabel(),
+                      juce::NotificationType::dontSendNotification);
+    modeLabel.setFont(UISSOT::Typography::labelFont());
+    modeLabel.setColour(juce::Label::textColourId, UISSOT::Colors::textSecondary());
     addAndMakeVisible(modeLabel);
-    
-    // Initial state
-    setCurrentMode(0);
+
+    // Setup combo box
+    modeComboBox.addItem(ModelSSOT::Helpers::contentTypeToString(
+        ModelSSOT::ContentType::MusicNonDrums), 1);
+    modeComboBox.addItem(ModelSSOT::Helpers::contentTypeToString(
+        ModelSSOT::ContentType::MusicDrums), 2);
+    modeComboBox.addItem(ModelSSOT::Helpers::contentTypeToString(
+        ModelSSOT::ContentType::CinemaTrailer), 3);
+    modeComboBox.setSelectedId(2);  // Default: Music Drums
+    modeComboBox.addListener(this);
+    addAndMakeVisible(modeComboBox);
 }
 
 // ========================================================================
@@ -34,6 +32,24 @@ ModeSelectorComponent::ModeSelectorComponent()
 void ModeSelectorComponent::setAPVTS(juce::AudioProcessorValueTreeState* apvts)
 {
     apvtsPtr = apvts;
+
+    // Restore saved value if available
+    if (apvtsPtr != nullptr)
+    {
+        auto* param = apvtsPtr->getRawParameterValue(ModelSSOT::ParameterIDs::CONTENT_TYPE);
+        if (param != nullptr)
+        {
+            int savedValue = static_cast<int>(param->load());
+            modeComboBox.setSelectedId(savedValue + 1);  // +1 because IDs are 1-indexed
+            currentModeIndex = savedValue;
+        }
+    }
+}
+
+void ModeSelectorComponent::updateModeLabel()
+{
+    modeLabel.setText(UISSOT::Strings::contentTypeLabel(),
+                      juce::NotificationType::dontSendNotification);
 }
 
 // ========================================================================
@@ -42,51 +58,26 @@ void ModeSelectorComponent::setAPVTS(juce::AudioProcessorValueTreeState* apvts)
 
 void ModeSelectorComponent::setCurrentMode(int modeIndex)
 {
-    if (modeIndex >= 0 && modeIndex < ModelSSOT::MODE_COUNT)
+    modeComboBox.setSelectedId(modeIndex + 1);
+    currentModeIndex = modeIndex;
+}
+
+void ModeSelectorComponent::onModeChanged(int newMode)
+{
+    currentModeIndex = newMode;
+
+    // Update APVTS if connected
+    // Fixes DI-1: use setValueNotifyingHost() for proper undo/redo and host automation
+    if (apvtsPtr != nullptr)
     {
-        currentModeIndex = modeIndex;
-        updateButtons();
-        updateModeLabel();
+        auto* param = apvtsPtr->getParameter(ModelSSOT::ParameterIDs::CONTENT_TYPE);
+        if (param != nullptr)
+        {
+            param->beginChangeGesture();
+            param->setValueNotifyingHost(static_cast<float>(newMode) / 2.0f);  // Normalize to 0-1
+            param->endChangeGesture();
+        }
     }
-}
-
-// ========================================================================
-// PRIVATE METHODS
-// ========================================================================
-
-void ModeSelectorComponent::updateButtons()
-{
-    // Disable buttons at boundaries
-    prevButton.setEnabled(currentModeIndex > 0);
-    nextButton.setEnabled(currentModeIndex < ModelSSOT::MODE_COUNT - 1);
-}
-
-void ModeSelectorComponent::updateModeLabel()
-{
-    const ModelSSOT::YourMode mode = static_cast<ModelSSOT::YourMode>(currentModeIndex);
-    modeLabel.setText(ModelSSOT::Helpers::getModeName(mode), juce::dontSendNotification);
-}
-
-void ModeSelectorComponent::onPrevButtonClicked()
-{
-    if (apvtsPtr == nullptr || currentModeIndex <= 0)
-        return;
-    
-    // Decrement mode
-    const int newMode = currentModeIndex - 1;
-    apvtsPtr->getParameter(ModelSSOT::ParameterIDs::YOUR_MODE)
-        ->setValueNotifyingHost(static_cast<float>(newMode) / static_cast<float>(ModelSSOT::MODE_COUNT - 1));
-}
-
-void ModeSelectorComponent::onNextButtonClicked()
-{
-    if (apvtsPtr == nullptr || currentModeIndex >= ModelSSOT::MODE_COUNT - 1)
-        return;
-    
-    // Increment mode
-    const int newMode = currentModeIndex + 1;
-    apvtsPtr->getParameter(ModelSSOT::ParameterIDs::YOUR_MODE)
-        ->setValueNotifyingHost(static_cast<float>(newMode) / static_cast<float>(ModelSSOT::MODE_COUNT - 1));
 }
 
 // ========================================================================
@@ -95,27 +86,33 @@ void ModeSelectorComponent::onNextButtonClicked()
 
 void ModeSelectorComponent::paint(juce::Graphics& g)
 {
-    // Transparent background (parent handles it)
+    auto bounds = getLocalBounds();
+
+    // Background
+    g.fillAll(UISSOT::Colors::backgroundLight());
 }
 
 void ModeSelectorComponent::resized()
 {
-    const int buttonWidth = 40;
-    const int buttonHeight = 30;
-    const int labelWidth = 150;
-    const int spacing = 10;
-    
-    juce::Rectangle<int> bounds = getLocalBounds();
-    const int totalWidth = buttonWidth + spacing + labelWidth + spacing + buttonWidth;
-    const int startX = (bounds.getWidth() - totalWidth) / 2;
-    const int centerY = (bounds.getHeight() - buttonHeight) / 2;
-    
-    // Previous button
-    prevButton.setBounds(startX, centerY, buttonWidth, buttonHeight);
-    
-    // Mode label (center)
-    modeLabel.setBounds(startX + buttonWidth + spacing, centerY, labelWidth, buttonHeight);
-    
-    // Next button
-    nextButton.setBounds(startX + buttonWidth + spacing + labelWidth + spacing, centerY, buttonWidth, buttonHeight);
+    auto bounds = getLocalBounds();
+    bounds.reduce(UISSOT::Dimensions::MARGIN_SMALL, UISSOT::Dimensions::MARGIN_SMALL);
+
+    // Label at top
+    modeLabel.setBounds(bounds.removeFromTop(20));
+
+    // Combo box below label
+    modeComboBox.setBounds(bounds.removeFromTop(28));
+}
+
+// ========================================================================
+// COMBOBOX LISTENER
+// ========================================================================
+
+void ModeSelectorComponent::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
+{
+    if (comboBoxThatHasChanged == &modeComboBox)
+    {
+        int newMode = modeComboBox.getSelectedId() - 1;  // Convert from 1-indexed
+        onModeChanged(newMode);
+    }
 }

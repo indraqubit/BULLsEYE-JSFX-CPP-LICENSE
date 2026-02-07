@@ -7,67 +7,61 @@
 #include "SSOT/ModelSSOT.h"
 #include "Components/StatusDisplayComponent.h"
 #include "Components/ModeSelectorComponent.h"
-#include "Components/MuteButtonComponent.h"
-#include "Components/InvertToggleComponent.h"
-#include "Components/ModeDescriptionComponent.h"
+#include "Components/CircularMeterComponent.h"
 
 /**
- * Main Audio Processor Editor
- * 
- * Handles UI display and user interaction.
- * TODO: Customize for your plugin
+ * BULLsEYE Audio Processor Editor
+ *
+ * Main UI for the LUFS-I meter with True Peak detection.
+ * Displays loudness measurements via circular donut meter and allows content type selection.
  */
-class YourEditor : public juce::AudioProcessorEditor,
-                   public juce::AudioProcessorValueTreeState::Listener
+class BULLsEYEEditor : public juce::AudioProcessorEditor,
+                       public juce::Timer
 {
 public:
     // ========================================================================
     // CONSTRUCTOR / DESTRUCTOR
     // ========================================================================
-    
-    YourEditor(YourProcessor& p);
-    ~YourEditor() override;
-    
+
+    explicit BULLsEYEEditor(BULLsEYEProcessor& p);
+    ~BULLsEYEEditor() override;
+
     // ========================================================================
     // JUCE LIFECYCLE
     // ========================================================================
-    
+
     void paint(juce::Graphics& g) override;
     void resized() override;
-    
+
     // ========================================================================
-    // APVTS LISTENER
+    // TIMER (for meter updates)
     // ========================================================================
-    
-    void parameterChanged(const juce::String& parameterID, float newValue) override;
-    
+
+    void timerCallback() override;
+
 private:
     // ========================================================================
     // PRIVATE MEMBERS
     // ========================================================================
-    
-    YourProcessor& audioProcessor;
-    
-    // TODO: Add your UI components
+
+    BULLsEYEProcessor& audioProcessor;
+
+    // UI Components
     StatusDisplayComponent statusDisplay;
     ModeSelectorComponent modeSelector;
-    MuteButtonComponent muteButton;
-    InvertToggleComponent invertToggle;
-    ModeDescriptionComponent modeDescription;
-    
+    CircularMeterComponent circularMeter;
+
     // ========================================================================
     // HELPER METHODS
     // ========================================================================
-    
+
     void updateStatusDisplay();
     void updateModeSelector();
-    void updateMuteButton();
-    void updateInvertToggle();
-    void updateModeDescription();
-    
+    void updateCircularMeter();
+
     // ========================================================================
     // JUCE MACROS
     // ========================================================================
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(YourEditor)
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BULLsEYEEditor)
 };

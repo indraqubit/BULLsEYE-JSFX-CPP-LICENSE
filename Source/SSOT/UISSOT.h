@@ -1,154 +1,156 @@
 #pragma once
 
-#include <juce_graphics/juce_graphics.h>  // For juce::Colour
-#include <juce_core/juce_core.h>         // For juce::String
+#include <juce_core/juce_core.h>
+#include <juce_graphics/juce_graphics.h>
 
-/**
- * UI Layer Single Source of Truth
- * 
- * Contains all UI-related constants:
- * - Colors (button states, status colors)
- * - Dimensions (button size, panel size)
- * - Strings (status text)
- * - Helper functions (status text/color getters)
- * 
- * Usage: Include in all UI components, never hardcode values.
- */
 namespace UISSOT
 {
-    // ========================================================================
+    // ==========================================
     // COLORS
-    // ========================================================================
-    
+    // ==========================================
     namespace Colors
     {
-        // Note: juce::Colour constructor is not constexpr in JUCE 8
-        
-        // TODO: Customize with your colors
-        
-        // Button colors
-        inline juce::Colour PRIMARY_ON() { return juce::Colour::fromRGB(60, 180, 60); }
-        inline juce::Colour PRIMARY_HL() { return juce::Colour::fromRGB(100, 220, 100); }
-        inline juce::Colour SECONDARY_OFF() { return juce::Colour::fromRGB(180, 60, 60); }
-        inline juce::Colour SECONDARY_HL() { return juce::Colour::fromRGB(220, 100, 100); }
-        inline juce::Colour NEUTRAL() { return juce::Colour::fromRGB(100, 100, 100); }
-        
+        // Background colors
+        inline juce::Colour background() { return juce::Colour(0xff1a1a1a); }
+        inline juce::Colour backgroundDark() { return juce::Colour(0xff121212); }
+        inline juce::Colour backgroundLight() { return juce::Colour(0xff2a2a2a); }
+
+        // Text colors
+        inline juce::Colour textPrimary() { return juce::Colour(0xffffffff); }
+        inline juce::Colour textSecondary() { return juce::Colour(0xffaaaaaa); }
+        inline juce::Colour textMuted() { return juce::Colour(0xff666666); }
+
         // Status colors
-        inline juce::Colour STATUS_ACTIVE() { return juce::Colour::fromRGB(0, 200, 0); }
-        inline juce::Colour STATUS_INACTIVE() { return juce::Colour::fromRGB(200, 0, 0); }
-        
-        // Special mode colors (e.g., Latch mode)
-        inline juce::Colour SPECIAL_ON() { return juce::Colour::fromRGB(80, 200, 80); }
-        inline juce::Colour SPECIAL_OFF() { return juce::Colour::fromRGB(150, 80, 80); }
-        
-        // UI colors (professional dark theme)
-        inline juce::Colour BACKGROUND_DARK() { return juce::Colour::fromRGB(28, 28, 30); }
-        inline juce::Colour BACKGROUND_MID() { return juce::Colour::fromRGB(35, 35, 38); }
-        inline juce::Colour PANEL_BG() { return juce::Colour::fromRGB(40, 40, 44); }
-        inline juce::Colour TEXT_PRIMARY() { return juce::Colour::fromRGB(255, 255, 255); }
-        inline juce::Colour TEXT_SECONDARY() { return juce::Colour::fromRGB(180, 180, 180); }
-        inline juce::Colour TEXT_TERTIARY() { return juce::Colour::fromRGB(140, 140, 140); }
-        inline juce::Colour BRAND_ACCENT() { return juce::Colour::fromRGB(100, 150, 255); }
-        inline juce::Colour DIVIDER() { return juce::Colour::fromRGB(60, 60, 65); }
+        inline juce::Colour balanced() { return juce::Colour(0xff4dff4d); }     // Green
+        inline juce::Colour hot() { return juce::Colour(0xffff4d4d); }         // Red
+        inline juce::Colour quiet() { return juce::Colour(0xff4d4dff); }       // Blue
+
+        // UI element colors
+        inline juce::Colour panel() { return juce::Colour(0xff252525); }
+        inline juce::Colour border() { return juce::Colour(0xff3a3a3a); }
+        inline juce::Colour highlight() { return juce::Colour(0xff4a9eff); }
+
+        // Meter colors
+        inline juce::Colour meterBackground() { return juce::Colour(0xff333333); }
+        inline juce::Colour meterBalancedZone() { return juce::Colour(0x664dff4d); }  // Semi-transparent green
+        inline juce::Colour meterCenterLine() { return juce::Colour(0xffcccccc); }
+
+        // LED strip colors
+        inline juce::Colour ledGreen() { return juce::Colour(0xff00ff00); }           // Safe zone
+        inline juce::Colour ledLightGreen() { return juce::Colour(0xff88ff00); }       // Good zone
+        inline juce::Colour ledYellow() { return juce::Colour(0xffffff00); }          // Loud zone
+        inline juce::Colour ledOrange() { return juce::Colour(0xffff8800); }          // Very loud zone
+        inline juce::Colour ledRed() { return juce::Colour(0xffff0000); }             // Danger zone
+        inline juce::Colour ledTargetMarker() { return juce::Colour(0xff00ffff); }     // Cyan target line
+
+        // Error state colors
+        inline juce::Colour errorState() { return juce::Colour(0xffff00ff); }           // Yellow for invalid/error states
+        inline juce::Colour overflow() { return juce::Colour(0xffff8800); }             // Orange for overflow/clipping
+        inline juce::Colour underflow() { return juce::Colour(0xff8888ff); }            // Light blue for underflow/silence
     }
-    
-    // ========================================================================
+
+    // ==========================================
     // DIMENSIONS
-    // ========================================================================
-    
+    // ==========================================
     namespace Dimensions
     {
-        // TODO: Customize with your dimensions
-        
-        // Button dimensions
-        constexpr int BUTTON_DIAMETER = 140;
-        constexpr int BUTTON_PRESS_OFFSET = 2;
-        constexpr int SHADOW_OFFSET = 2;
-        constexpr float HIGHLIGHT_ALPHA = 0.6f;
-        
-        // Panel dimensions (from JSFX @gfx W H)
-        constexpr int PANEL_WIDTH = 450;
-        constexpr int PANEL_HEIGHT = 320;
-        
-        // Layout spacing
-        constexpr int PADDING_SMALL = 8;
-        constexpr int PADDING_MEDIUM = 16;
-        constexpr int PADDING_LARGE = 24;
-        constexpr int SPACING_COMPONENT = 12;
-        constexpr int SPACING_SECTION = 20;
-        
-        // Header
-        constexpr int HEADER_HEIGHT = 50;
-        constexpr int TITLE_FONT_SIZE = 24;
-        constexpr int BRAND_FONT_SIZE = 11;
-        
-        // Component heights
-        constexpr int STATUS_HEIGHT = 32;
-        constexpr int MODE_SELECTOR_HEIGHT = 44;
-        constexpr int TOGGLE_HEIGHT = 32;
-        constexpr int DESCRIPTION_HEIGHT = 48;
+        constexpr int DEFAULT_WINDOW_WIDTH = 320;
+        constexpr int DEFAULT_WINDOW_HEIGHT = 300;
+
+        // Margins and padding
+        constexpr int MARGIN_SMALL = 4;
+        constexpr int MARGIN_MEDIUM = 8;
+        constexpr int MARGIN_LARGE = 12;
+        constexpr int MARGIN_XLARGE = 16;
+
+        // Component dimensions
+        constexpr int HEADER_HEIGHT = 30;
+        constexpr int METER_HEIGHT = 20;
+        constexpr int BUTTON_HEIGHT = 24;
+        constexpr int DROPDOWN_HEIGHT = 28;
+
+        // Bar meter
+        constexpr int BAR_WIDTH = 276;
+        constexpr int BAR_HEIGHT = 8;
+        constexpr int BAR_RANGE_LU = 5;  // ±5 LU range
+
+        // LED Strip Meter
+        constexpr int LED_METER_HEIGHT = 40;
+        constexpr int LED_METER_PADDING = 4;
+        constexpr int LED_METER_LED_SPACING = 1;
+        constexpr int LED_CORNER_RADIUS = 2;
+        constexpr int LED_SHINE_CORNER_RADIUS = 1;
+        constexpr float LED_SHINE_HEIGHT_RATIO = 0.3f;
+        constexpr float LED_SHINE_ALPHA = 0.2f;
+        constexpr float LED_INACTIVE_BRIGHTNESS = 0.15f;
+        constexpr float LED_SMOOTHING_FACTOR = 0.25f;
+        constexpr float LED_REPAINT_THRESHOLD = 0.001f;
+        constexpr int LED_TARGET_MARKER_EXTRA = 3;
+        constexpr int LED_TARGET_MARKER_WIDTH = 2;
+        constexpr int LED_TARGET_LABEL_WIDTH = 24;
+        constexpr int LED_TARGET_LABEL_HEIGHT = 12;
+        constexpr int LED_TARGET_LABEL_OFFSET = 5;
+        constexpr int LED_VALUE_WIDTH = 100;
+        constexpr int LED_VALUE_HEIGHT = 20;
+
+        // Edge case and validation thresholds
+        constexpr double MIN_VALID_SAMPLE_RATE = 8000.0;    // Minimum valid sample rate
+        constexpr double MAX_VALID_SAMPLE_RATE = 1000000.0; // Maximum valid sample rate (1 MHz)
+        constexpr double MAX_DEVIATION_CLAMP = 50.0;        // Clamp extreme deviations to ±50 LU
+        constexpr double MAX_PEAK_CLAMP = 1e10;            // Clamp extreme peak values
+        constexpr double MAX_BLOCK_ACCUM = 1e100;           // Clamp extreme block accumulators
     }
-    
-    // ========================================================================
+
+    // ==========================================
     // STRINGS
-    // ========================================================================
-    
+    // ==========================================
     namespace Strings
     {
-        // TODO: Customize with your status strings
-        
-        constexpr const char* STATUS_ACTIVE_TEXT = "● Active";
-        constexpr const char* STATUS_INACTIVE_TEXT = "● Inactive";
-        
-        // Your custom strings here
-        constexpr const char* CUSTOM_STRING_1 = "Your custom string";
-        constexpr const char* CUSTOM_STRING_2 = "Another custom string";
+        inline juce::String pluginName() { return "BULLsEYE"; }
+        inline juce::String contentTypeLabel() { return "Content Type"; }
+        inline juce::String lufsLabel() { return "Live LUFS-I"; }
+        inline juce::String mixEnergyLabel() { return "Mix Energy"; }
+        inline juce::String truePeakLabel() { return "True Peak"; }
+        inline juce::String statusBalanced() { return "Balanced"; }
+        inline juce::String statusHot() { return "Hot"; }
+        inline juce::String statusQuiet() { return "Quiet"; }
+        inline juce::String noMeasurement() { return "--.-"; }
+        inline juce::String signalBelowGate() { return "Below Gate"; }
+        inline juce::String invalidSignal() { return "Invalid"; }
     }
-    
-    // ========================================================================
-    // HELPER FUNCTIONS
-    // ========================================================================
-    
-    namespace Helpers
+
+    // ==========================================
+    // TYPOGRAPHY
+    // ==========================================
+    namespace Typography
     {
-        /**
-         * Get status text based on active state
-         */
-        inline juce::String getStatusText(bool isActive)
+        inline juce::FontOptions headerFont()
         {
-            return isActive ? Strings::STATUS_ACTIVE_TEXT : Strings::STATUS_INACTIVE_TEXT;
+            return juce::FontOptions().withHeight(16.0f).withStyle("bold");
         }
-        
-        /**
-         * Get status color based on active state
-         */
-        inline juce::Colour getStatusColour(bool isActive)
+
+        inline juce::FontOptions labelFont()
         {
-            return isActive ? Colors::STATUS_ACTIVE() : Colors::STATUS_INACTIVE();
+            return juce::FontOptions().withHeight(12.0f);
         }
-        
-        /**
-         * Get primary color based on state
-         */
-        inline juce::Colour getPrimaryColour(bool isOn)
+
+        inline juce::FontOptions valueFont()
         {
-            return isOn ? Colors::PRIMARY_ON() : Colors::SECONDARY_OFF();
+            return juce::FontOptions().withHeight(14.0f).withStyle("bold");
         }
-        
-        /**
-         * Get highlight color based on state
-         */
-        inline juce::Colour getHighlightColour(bool isOn)
+
+        inline juce::FontOptions meterFont()
         {
-            return isOn ? Colors::PRIMARY_HL() : Colors::SECONDARY_HL();
+            return juce::FontOptions().withHeight(10.0f);
         }
-        
-        /**
-         * Convert alpha to transparency
-         */
-        inline float alphaToAlpha(float alpha)
-        {
-            return alpha;  // Already in 0-1 range
-        }
+    }
+
+    // ==========================================
+    // TIMING
+    // ==========================================
+    namespace Timing
+    {
+        constexpr int UI_REFRESH_RATE_HZ = 30;
+        constexpr int METER_SMOOTHING_MS = 100;
     }
 }

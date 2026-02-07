@@ -1,0 +1,248 @@
+desc:BULLsEYE - Mini Combo (LUFS-I Gated + True Peak 4x)
+author: IQ 2025
+version: 1.2.1
+
+in_pin:Left
+in_pin:Right
+out_pin:Left
+out_pin:Right
+
+slider1:ref_mode=1<0,2,1{Music Non-drums (-11),Music Drums (-8),Cinema/Trailer (-14)}>Content Type
+
+@init
+tau = 2*$pi;
+LOG10 = log(10);
+NEG_INF = -1000000000;
+NEG_INF_THR = -900000000;
+TINY = 0.000000000000000001;
+EPS = 0.000000000001;
+DENORM = 0.000000000000000001;
+
+// Initialize target_lufs based on default ref_mode (1 = -8)
+target_lufs = -8;
+
+// biquad helpers
+function biquad_set(cf, fc, Q, gdb, mode)
+(
+  w = tau*fc/srate;
+  cosw = cos(w);
+  sinw = sin(w);
+  A = 10^(gdb/40);
+
+  mode == 0 ? (
+    alpha = sinw/(2*Q);
+    b0 = (1+cosw)/2;
+    b1 = -(1+cosw);
+    b2 = (1+cosw)/2;
+    a0 = 1 + alpha;
+    a1 = -2*cosw;
+    a2 = 1 - alpha;
+  ) : (
+    alpha = sinw/(2*sqrt(2));
+    two_sqrtA_alpha = 2*sqrt(A)*alpha;
+    b0 = A*((A+1) + (A-1)*cosw + two_sqrtA_alpha);
+    b1 = -2*A*((A-1) + (A+1)*cosw);
+    b2 = A*((A+1) + (A-1)*cosw - two_sqrtA_alpha);
+    a0 = (A+1) - (A-1)*cosw + two_sqrtA_alpha;
+    a1 = 2*((A-1) - (A+1)*cosw);
+    a2 = (A+1) - (A-1)*cosw - two_sqrtA_alpha;
+  );
+
+  a0 = (abs(a0) < TINY) ? (a0 >= 0 ? TINY : -TINY) : a0;
+
+  inva0 = 1/a0;
+  cf[0]=b0*inva0; cf[1]=b1*inva0; cf[2]=b2*inva0; cf[3]=a1*inva0; cf[4]=a2*inva0;
+);
+
+// K-weighting coeffs & states
+hp_coeff[5]; hs_coeff[5];
+x1_hp_l=0; x2_hp_l=0; y1_hp_l=0; y2_hp_l=0;
+x1_hs_l=0; x2_hs_l=0; y1_hs_l=0; y2_hs_l=0;
+x1_hp_r=0; x2_hp_r=0; y1_hp_r=0; y2_hp_r=0;
+x1_hs_r=0; x2_hs_r=0; y1_hs_r=0; y2_hs_r=0;
+
+// LUFS-I gated (400 ms)
+blkN = max(1, floor(0.400*srate));
+blk_sum=0; blk_cnt=0;
+int_energy_sum=0; int_sample_sum=0;
+L_int = NEG_INF; K_OFFSET_DB = -0.691; gate_abs = -70;
+
+// True Peak (Hermite 4x)
+l0=0; l1=0; l2=0; l3=0;
+r0=0; r1=0; r2=0; r3=0;
+tp_peak_l=0; tp_peak_r=0; tp_curr_db=-120;
+
+function to_db(x)(20*(log(max(x,EPS))/LOG10));
+function hermite(x0,x1,x2,x3,t)
+(
+  t2=t*t; t3=t2*t;
+  a=-0.5*x0 + 1.5*x1 - 1.5*x2 + 0.5*x3;
+  b= x0 - 2.5*x1 + 2.0*x2 - 0.5*x3;
+  c=-0.5*x0 + 0.5*x2;
+  d= x1;
+  y=a*t3 + b*t2 + c*t + d;
+  (abs(y)<DENORM || y!=y) ? y=0;
+  y;
+);
+
+@slider
+// Map ref_mode to target_lufs (0 = -11, 1 = -8, 2 = -14)
+target_lufs = (ref_mode == 0) ? -11 : (ref_mode == 1) ? -8 : -14;
+
+// recompute filters and block size (SR-agnostic)
+biquad_set(hp_coeff, 60, 0.5, 0, 0);
+biquad_set(hs_coeff, 4000, 0.7071067811865475, 4, 1);
+blkN = max(1, floor(0.400*srate));
+
+@sample
+// passthrough
+spl0_out=spl0; spl1_out=spl1;
+
+// K-weight L
+x=spl0_out;
+b0=hp_coeff[0]; b1=hp_coeff[1]; b2=hp_coeff[2]; a1=hp_coeff[3]; a2=hp_coeff[4];
+y=b0*x + b1*x1_hp_l + b2*x2_hp_l - a1*y1_hp_l - a2*y2_hp_l;
+x2_hp_l=x1_hp_l; x1_hp_l=x; y2_hp_l=y1_hp_l; y1_hp_l=y;
+
+b0=hs_coeff[0]; b1=hs_coeff[1]; b2=hs_coeff[2]; a1=hs_coeff[3]; a2=hs_coeff[4];
+x=y;
+y=b0*x + b1*x1_hs_l + b2*x2_hs_l - a1*y1_hs_l - a2*y2_hs_l;
+x2_hs_l=x1_hs_l; x1_hs_l=x; y2_hs_l=y1_hs_l; y1_hs_l=y;
+yl=y;
+
+// K-weight R
+x=spl1_out;
+b0=hp_coeff[0]; b1=hp_coeff[1]; b2=hp_coeff[2]; a1=hp_coeff[3]; a2=hp_coeff[4];
+y=b0*x + b1*x1_hp_r + b2*x2_hp_r - a1*y1_hp_r - a2*y2_hp_r;
+x2_hp_r=x1_hp_r; x1_hp_r=x; y2_hp_r=y1_hp_r; y1_hp_r=y;
+
+b0=hs_coeff[0]; b1=hs_coeff[1]; b2=hs_coeff[2]; a1=hs_coeff[3]; a2=hs_coeff[4];
+x=y;
+y=b0*x + b1*x1_hs_r + b2*x2_hs_r - a1*y1_hs_r - a2*y2_hs_r;
+x2_hs_r=x1_hs_r; x1_hs_r=x; y2_hs_r=y1_hs_r; y1_hs_r=y;
+yr=y;
+
+// energy
+e=yl*yl + yr*yr;
+
+// integrated (400 ms blocks + gate abs/rel)
+blk_sum+=e; blk_cnt+=1;
+blk_cnt>=blkN ? (
+  blk_mean=blk_sum/blk_cnt;
+  blk_lufs=(blk_mean>0)?(K_OFFSET_DB + 10*(log(blk_mean)/LOG10)):NEG_INF;
+
+  gate_rel=(L_int<=NEG_INF_THR ? -70 : L_int - 10);
+  gate_thr=max(gate_abs, gate_rel);
+
+  (blk_lufs>=gate_thr) ? (
+    int_energy_sum+=blk_sum;
+    int_sample_sum+=blk_cnt;
+  );
+
+  blk_sum=0; blk_cnt=0;
+
+  (int_sample_sum>0) ? (
+    mean_all=int_energy_sum/int_sample_sum;
+    L_int=K_OFFSET_DB + 10*(log(max(mean_all,EPS))/LOG10);
+  ) : (
+    L_int=NEG_INF
+  );
+);
+
+// True Peak 4x
+l0=l1; l1=l2; l2=l3; l3=spl0_out;
+r0=r1; r1=r2; r2=r3; r3=spl1_out;
+
+tp_l0=hermite(l0,l1,l2,l3,0.00);
+tp_l1=hermite(l0,l1,l2,l3,0.25);
+tp_l2=hermite(l0,l1,l2,l3,0.50);
+tp_l3=hermite(l0,l1,l2,l3,0.75);
+
+tp_r0=hermite(r0,r1,r2,r3,0.00);
+tp_r1=hermite(r0,r1,r2,r3,0.25);
+tp_r2=hermite(r0,r1,r2,r3,0.50);
+tp_r3=hermite(r0,r1,r2,r3,0.75);
+
+pL=max( max(abs(tp_l0),abs(tp_l1)), max(abs(tp_l2),abs(tp_l3)) );
+pR=max( max(abs(tp_r0),abs(tp_r1)), max(abs(tp_r2),abs(tp_r3)) );
+(abs(pL)<DENORM)?pL=0;
+(abs(pR)<DENORM)?pR=0;
+
+tp_peak_l=max(tp_peak_l,pL);
+tp_peak_r=max(tp_peak_r,pR);
+tp_lin=max(tp_peak_l,tp_peak_r);
+tp_curr_db=max(to_db(tp_lin),-120);
+
+// writeback
+spl0=spl0_out; spl1=spl1_out;
+
+@gfx 300 110
+gfx_clear = 0;
+gfx_set(1,1,1,1);
+
+// Header
+gfx_x=12; gfx_y=10;
+content_type = (ref_mode == 0) ? "Music Non-drums" : (ref_mode == 1) ? "Music Drums" : "Cinema/Trailer";
+sprintf(#hdr,"BULLsEYE (%s: %.1f LUFS)", content_type, target_lufs);
+gfx_drawstr(#hdr);
+
+// Live LUFS-I
+gfx_y=40; gfx_x=12;
+(L_int<=NEG_INF_THR) ? sprintf(#s,"Live LUFS-I: --.-") : sprintf(#s,"Live LUFS-I: %.1f", L_int);
+gfx_drawstr(#s);
+
+// Deviation - calculate dI first
+(L_int<=NEG_INF_THR) ? dI=0 : dI=L_int-target_lufs;
+dI > 1.0 ? status = "Hot" :
+dI < -1.0 ? status = "Quiet" :
+status = "Balanced";
+
+// Deviation text
+gfx_y=60; gfx_x=12;
+(L_int<=NEG_INF_THR) ? sprintf(#s,"Mix Energy: --.- LU") : sprintf(#s,"Mix Energy: %s (%+.1f LU)", status, dI);
+gfx_drawstr(#s);
+
+// Horizontal bar visualization
+gfx_y=75; gfx_x=12;
+bar_w = 276;  // bar width (300 - 24 for margins)
+bar_h = 8;    // bar height
+bar_center_x = 12 + bar_w/2;  // center of bar
+bar_range = 5.0;  // ±5 LU range
+
+// Draw background bar
+gfx_set(0.2, 0.2, 0.2, 1);  // dark gray background
+gfx_rect(gfx_x, gfx_y, bar_w, bar_h);
+
+// Draw balanced range bar (semi-transparent green overlay)
+balanced_bar_x_left = bar_center_x + (-1.0 / bar_range) * (bar_w / 2);  // -1.0 LU position
+balanced_bar_x_right = bar_center_x + (1.0 / bar_range) * (bar_w / 2);   // +1.0 LU position
+balanced_bar_width = balanced_bar_x_right - balanced_bar_x_left;
+gfx_set(0.3, 1, 0.3, 0.4);  // green with 40% opacity
+gfx_rect(balanced_bar_x_left, gfx_y, balanced_bar_width, bar_h);
+
+// Draw center line at 0 (thicker and more visible)
+gfx_set(0.8, 0.8, 0.8, 1);  // lighter gray for better visibility
+gfx_rect(bar_center_x - 1, gfx_y, 2, bar_h);  // 2px wide rectangle instead of line
+
+// Draw deviation indicator
+(L_int<=NEG_INF_THR) ? (
+  0;  // No valid measurement - no-op
+) : (
+  // Clamp deviation to bar range
+  dI_clamped = max(-bar_range, min(bar_range, dI));
+  // Map deviation to bar position (0 = center, -bar_range = left, +bar_range = right)
+  indicator_x = bar_center_x + (dI_clamped / bar_range) * (bar_w / 2);
+  
+  // Color based on status
+  (dI > 1.0) ? (gfx_set(1, 0.3, 0.3, 1)) :  // red for Hot
+  (dI < -1.0) ? (gfx_set(0.3, 0.3, 1, 1)) :  // blue for Quiet
+  (gfx_set(0.3, 1, 0.3, 1));  // green for Balanced
+  
+  // Draw indicator (small rectangle or line)
+  gfx_rect(indicator_x - 2, gfx_y - 1, 4, bar_h + 2);
+);
+
+// True Peak
+gfx_y=90; gfx_x=12;
+sprintf(#tpc,"True Peak: %.1f dBTP", tp_curr_db);
+gfx_drawstr(#tpc);
