@@ -30,10 +30,20 @@ If contracts conflict, prioritize: **Audio safety > Correctness > UX convenience
 
 ## 2) Non-Negotiables (Red Lines)
 
+### License State Authority (SSOT)
+- **Single source of truth:** one atomic license snapshot owned by EngineCore.
+- **Write authority:** UI/background paths may update state only through EngineCore commit/swap API.
+- **Read authority:** audio thread is read-only (atomic snapshot reads only).
+- **Visibility rule:** no partial state publication; publish only complete versioned snapshot swaps.
+
 ### Audio Thread Red Lines
 - No locks, no heap allocation, no disk I/O, no network calls in `processBlock()`.
 - Use atomic or lock-free reads only for license checks in audio path.
 - Keep fallback behavior deterministic when license state is stale/unavailable.
+
+### Deterministic Fallback Rule
+- If license state is **unknown/stale/unavailable**, runtime behavior must be exactly **TRIAL behavior** as defined by SSOT flags.
+- This fallback must be test-covered and identical across all hosts.
 
 ### UI / Background Red Lines
 - Activation/network/state refresh can run off audio thread only.
@@ -56,7 +66,7 @@ If contracts conflict, prioritize: **Audio safety > Correctness > UX convenience
 - UI refresh cadence is bounded (e.g., 1 Hz target).
 
 ### C3 — Host Lifecycle Contract
-- Engine initialization point is explicit and documented.
+- Engine initialization boundary is explicit: **initialize in `prepareToPlay()`** (not first `processBlock()`).
 - `getStateInformation()` / `setStateInformation()` maintain consistent license state.
 
 ### C4 — Persistence & Security Contract
@@ -71,6 +81,8 @@ If contracts conflict, prioritize: **Audio safety > Correctness > UX convenience
 ### C6 — Test Contract
 - Existing regression suite remains green.
 - New license tests prove thread, lifecycle, persistence, and deployment constraints.
+- Must include test: **license state change during active playback**.
+- Must include test: **DAW reload with corrupt license blob**.
 
 ---
 
