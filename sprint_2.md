@@ -11,7 +11,7 @@
 | **Sprint** | 5 |
 | **Start Date** | 2026-02-07 (planned) |
 | **End Date** | TBD |
-| **Goal** | Integrate Portable License Drop-In Kit, create OSX installer with trial + licensed builds |
+| **Goal** | Integrate Portable License Drop-In Kit, define macOS installer plan (execution TBD) |
 | **Status** | ✅ PRE-FLIGHT ASSESSMENT COMPLETE — Ready for Phase 1 execution |
 | **Phase** | Staging (no production, no Apple Developer ID yet) |
 
@@ -27,7 +27,7 @@
 ### Sprint 5 Objectives
 1. Assess and integrate Portable License Drop-In Kit
 2. Implement license engine (trial, activation, offline validation)
-3. Create OSX installer with both trial and licensed builds
+3. Define macOS installer approach with both trial and licensed build targets (execution TBD)
 4. Maintain all existing functionality and test coverage
 5. Prepare for cross-platform deployment (Windows/Linux) in future sprint
 
@@ -122,18 +122,18 @@
 
 ---
 
-### Phase 5: OSX Installer Creation
+### Phase 5: macOS Installer Creation (TBD)
 
 | Task | Status | Priority | Estimate | Dependencies |
 |------|--------|----------|----------|--------------|
-| Design installer requirements | ⏳ TODO | P0 | 0.5d | None |
-| Create PKGBUILD or PackageMaker spec | ⏳ TODO | P0 | 1.5d | Requirements |
-| Build trial version installer | ⏳ TODO | P0 | 1.0d | Phase 4 |
-| Build licensed version installer | ⏳ TODO | P0 | 1.0d | Phase 4 |
-| Create uninstaller script | ⏳ TODO | P1 | 0.5d | Installer spec |
-| Test install/uninstall cycle | ⏳ TODO | P0 | 0.5d | All installers built |
+| Design installer requirements | 💤 TBD | P0 | TBD | None |
+| Create `pkgbuild`/`productbuild` spec | 💤 TBD | P0 | TBD | Requirements |
+| Build trial version installer | 💤 TBD | P0 | TBD | Phase 4 |
+| Build licensed version installer | 💤 TBD | P0 | TBD | Phase 4 |
+| Create uninstaller script | 💤 TBD | P1 | TBD | Installer spec |
+| Test install/uninstall cycle | 💤 TBD | P0 | TBD | All installers built |
 
-**Milestone:** OSX installer with trial + licensed builds ready
+**Milestone:** macOS installer plan finalized (implementation TBD)
 
 ---
 
@@ -179,7 +179,7 @@
 - Days 7-8: Phase 4 (macOS Deployment Compliance)
 
 ### Week 3: Installer & Testing
-- Days 9-10: Phase 5 (OSX Installer)
+- Days 9-10: Phase 5 (macOS Installer, TBD)
 - Days 11-12: Phase 6 (Testing & Validation)
 
 ### Week 4: Documentation & Release
@@ -392,12 +392,12 @@
    - Build system: Header-only, no dependency conflicts
    - Platform support: macOS (Keychain), Windows (Registry), Linux (file) all documented
 
-4. **Estimated Effort Reaffirmed: 12-14 Days** ✅
+4. **Estimated Effort Reaffirmed: Flexible Timeline** ✅
    - Phase 1 (Foundation): 1 day — CMake + LicenseSSOT.h
    - Phase 2 (Core): 2 days — PluginProcessor integration + atomic API
    - Phase 3 (UI): 2 days — LicenseStatusComponent + activation dialog
    - Phase 4 (macOS): 2 days — Deployment verification + codesign
-   - Phase 5 (Cross-Platform): 1 day — Windows/Linux preparation
+   - Phase 5 (macOS Installer): TBD — installer work intentionally deferred
    - Phase 6 (Testing): 3 days — 20 new tests + DAW validation
    - Phase 7 (Documentation): 1 day — Changelogs, release tag
 
@@ -447,46 +447,46 @@
 - [ ] Zero allocations in audio path (verified with profiler)
 
 **Phase 3 Complete When:**
-- [x] LicenseStatusComponent displays trial/licensed status
-- [x] Activation dialog opens and accepts license key
-- [x] Status refreshes correctly at 1 Hz
-- [x] UI colors match design (trial=orange, licensed=green, expired=red)
+- [ ] LicenseStatusComponent displays trial/licensed status
+- [ ] Activation dialog opens and accepts license key
+- [ ] Status refreshes correctly at 1 Hz
+- [ ] UI colors match design (trial=orange, licensed=green, expired=red)
 
 **Phase 4 Complete When:**
-- [x] `otool -L` shows no absolute Homebrew paths
-- [x] `codesign --verify --deep --strict` passes
-- [x] Plugin loads on clean Mac (no Homebrew)
-- [x] Entitlements file configured (if network license)
+- [ ] `otool -L` shows no absolute Homebrew paths
+- [ ] `codesign --verify --deep --strict` passes
+- [ ] Plugin loads on clean Mac (no Homebrew)
+- [ ] Entitlements file configured (if network license)
 
-**Phase 5 Complete When:**
-- [x] Trial version installer builds successfully
-- [x] Licensed version installer builds successfully
-- [x] Install/uninstall cycle tested and works
-- [x] Installer script documented
+**Phase 5 Complete When (TBD):**
+- [ ] Trial version installer builds successfully
+- [ ] Licensed version installer builds successfully
+- [ ] Install/uninstall cycle tested and works
+- [ ] Installer script documented
 
 **Phase 6 Complete When:**
-- [x] All 20 new license tests pass
-- [x] All 48 existing tests still pass (0 regressions)
-- [x] DAW testing complete (REAPER, Logic, Ableton)
-- [x] Deployment verification script passes
+- [ ] All 20 new license tests pass
+- [ ] All 48 existing tests still pass (0 regressions)
+- [ ] DAW testing complete (REAPER, Logic, Ableton)
+- [ ] Deployment verification script passes
 
 **Phase 7 Complete When:**
-- [x] CHANGELOG.md updated for v2.1.0
-- [x] README.md includes licensing section
-- [x] LAW_BOOK.md includes Law 32
-- [x] Release tag created with metadata
+- [ ] CHANGELOG.md updated for v2.1.0
+- [ ] README.md includes licensing section
+- [ ] LAW_BOOK.md includes Law 32
+- [ ] Release tag created with metadata
 
-### Sprint 5 Success Criteria
+### Sprint 5 Target Success Criteria
 
-- ✅ License engine integrated without breaking existing functionality
-- ✅ All 48 existing tests pass (100% regression-free)
-- ✅ All 20 new license tests pass
-- ✅ Trial mode: 14 days, full audio functionality, "TRIAL" watermark
-- ✅ Licensed mode: License key activation, status persistence
-- ✅ OSX installer created for both trial and licensed builds
-- ✅ macOS deployment compliant with ANMO Laws 1-9
-- ✅ Documentation complete and up-to-date
-- ✅ Ready for cross-platform deployment (Windows/Linux) in future sprint
+- [ ] License engine integrated without breaking existing functionality
+- [ ] All 48 existing tests pass (100% regression-free)
+- [ ] All 20 new license tests pass
+- [ ] Trial mode: 14 days, full audio functionality, "TRIAL" watermark
+- [ ] Licensed mode: License key activation, status persistence
+- [ ] macOS installer created for both trial and licensed builds (TBD)
+- [ ] macOS deployment compliant with ANMO Laws 1-9
+- [ ] Documentation complete and up-to-date
+- [ ] Windows/Linux cross-platform deployment remains future scope (TBD)
 
 ---
 
@@ -793,14 +793,14 @@ All 48 existing tests must continue to pass after license integration:
 
 ## Future Work (Post-Sprint 5)
 
-### v2.2.0 - Cross-Platform Deployment
+### v2.2.0 - Cross-Platform Deployment (TBD)
 
-**Estimated:** Sprint 6  
+**Estimated:** TBD  
 **Goals:**
-- Windows VST3 build with license support
-- Linux LV2 build with license support
-- Installers for both platforms
-- Cross-platform testing
+- Windows VST3 build with license support (TBD)
+- Linux LV2 build with license support (TBD)
+- Installers for both platforms (TBD)
+- Cross-platform testing (TBD)
 
 ### v2.3.0 - Advanced Features
 
@@ -843,13 +843,13 @@ All 48 existing tests must continue to pass after license integration:
 - [ ] Create entitlements file (if network license)
 - [ ] Clean Mac testing (no Homebrew)
 
-### Phase 5: OSX Installer
-- [ ] Design installer requirements
-- [ ] Create PKGBUILD or PackageMaker spec
-- [ ] Build trial version installer
-- [ ] Build licensed version installer
-- [ ] Create uninstaller script
-- [ ] Test install/uninstall cycle
+### Phase 5: macOS Installer (TBD)
+- [ ] [TBD] Design installer requirements
+- [ ] [TBD] Create `pkgbuild`/`productbuild` spec
+- [ ] [TBD] Build trial version installer
+- [ ] [TBD] Build licensed version installer
+- [ ] [TBD] Create uninstaller script
+- [ ] [TBD] Test install/uninstall cycle
 
 ### Phase 6: Testing
 - [ ] Create 20 new license test cases
@@ -890,6 +890,9 @@ All 48 existing tests must continue to pass after license integration:
 - Code signing for testing purposes only (ad-hoc)
 - Notarization not needed in staging
 - Public release deferred to future phase
+
+### Agent Guidance
+- See `docs/AGENT_MENTAL_MODEL.md` for the contract-in-contract execution model and agent brief.
 
 ---
 
