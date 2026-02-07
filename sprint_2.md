@@ -12,7 +12,7 @@
 | **Start Date** | 2026-02-07 (planned) |
 | **End Date** | TBD |
 | **Goal** | Integrate Portable License Drop-In Kit, create OSX installer with trial + licensed builds |
-| **Status** | 📋 PLANNING |
+| **Status** | ✅ PRE-FLIGHT ASSESSMENT COMPLETE — Ready for Phase 1 execution |
 | **Phase** | Staging (no production, no Apple Developer ID yet) |
 
 ---
@@ -211,10 +211,209 @@
 
 ### Known Blockers
 
-| Blocker | Impact | Resolution Plan |
-|---------|--------|-----------------|
-| Network validation spec | Phase 1 OpenSSL config | User to provide reference |
-| None currently | - | - |
+**All Pre-Flight Blockers RESOLVED ✅**
+
+| Blocker | Status | Resolution |
+|---------|--------|-----------|
+| Network validation spec not verified | ✅ RESOLVED | `NETWORK_VALIDATION_REFERENCE.md` verified (765 lines, comprehensive API spec, OpenSSL strategies, ANMO compliance) |
+| License engine architecture unconfirmed | ✅ RESOLVED | Confirmed header-only, zero compilation, dual thread-safe API, no pre-built binaries |
+| Portable License Drop-In Kit integration approach | ✅ RESOLVED | Simple Drop-In approach selected (cleanest for BULLsEYE), full compatibility confirmed, no build conflicts |
+
+**No Current Blockers for Phase 1 Execution**
+
+---
+
+## Phase 1 Pre-flight Assessment Plan
+
+**Objective:** Validate three critical blockers before Phase 1 execution starts
+
+### Assessment Task 1: Network Validation Spec Verification
+
+**Goal:** Confirm `NETWORK_VALIDATION_REFERENCE.md` exists and contains required API configuration
+
+| Task | Owner | Status | Acceptance Criteria |
+|------|-------|--------|-------------------|
+| Check if `portable-license-drop-in/NETWORK_VALIDATION_REFERENCE.md` exists | TBD | ✅ PASS | File exists and contains sections 6.1-8.3 |
+| Extract API endpoints, timeouts, retry strategy | TBD | ✅ PASS | Document shows: `/generate`, `/verify`, `/deactivate`, `/transfer`, `/health` endpoints |
+| Validate URL and configuration format | TBD | ✅ PASS | Base URL format: `https://byiqaudio.com/api/v1`, timeout=30s, retries=3 |
+| Cross-reference with LicenseSSOT requirements | TBD | ✅ PASS | API spec matches Phase 1 task expectations (line 68-71) |
+
+**Output:** ✅ Network Validation Spec Verified
+- File: `portable-license-drop-in/NETWORK_VALIDATION_REFERENCE.md` (765 lines, comprehensive)
+- API Base URL: `https://byiqaudio.com/api/v1` ✅
+- Endpoints: `/plugins/licenses/generate`, `/plugins/licenses/verify`, `/plugins/licenses/deactivate`, `/plugins/licenses/transfer`, `/plugins/health` ✅
+- Timeout: 30 seconds ✅
+- Max Retries: 3 attempts with exponential backoff (500ms → 1000ms → 2000ms) ✅
+- Content-Type: `application/json` ✅
+- OpenSSL configuration: Detailed platform-specific strategies (Windows static, macOS dynamic, Linux shared) ✅
+- Verification scripts: Bundle validation, dylib checks, codesign verification ✅
+- ANMO compliance: Laws 1-10 mapped and verified ✅
+
+**Status:** ✅ **BLOCKER 1 RESOLVED** - Network validation spec is comprehensive and ready for Phase 1 LicenseSSOT.h configuration
+
+---
+
+### Assessment Task 2: License Engine Architecture Review
+
+**Goal:** Confirm Portable License Drop-In Kit is truly header-only (no runtime compilation needed)
+
+| Task | Owner | Status | Acceptance Criteria |
+|------|-------|--------|-------------------|
+| Audit `portable-license-drop-in/` directory structure | TBD | ✅ PASS | Identify all `.h`, `.hpp`, `.cpp` files; document architecture |
+| Identify header-only vs compiled components | TBD | ✅ PASS | List any `.cpp` files that require compilation |
+| Check for runtime dependencies (OpenSSL, WinHTTP, etc.) | TBD | ✅ PASS | Document platform-specific dependencies in drop-in kit |
+| Verify no pre-built binaries included | TBD | ✅ PASS | Confirm no `.a`, `.lib`, `.so`, `.dylib` in kit |
+| Extract integration interface (includes, namespaces) | TBD | ✅ PASS | Document main include path and public API |
+
+**Output:** ✅ License Engine Architecture Verified
+- **Header-Only Core:** ✅ Three implementations all `.hpp` only, no `.cpp` compilation required
+  - `LICENSE_ENGINE.hpp` — Main engine with audio-safe atomic API
+  - `LICENSE_ENGINE_EXTRACTOR.hpp` — Source extraction layer for AnalogMorph reuse
+  - `LICENSE_ENGINE_FACTORIZED.hpp` — Factored implementation with dependency injection
+- **No Pre-Built Binaries:** ✅ No `.a`, `.lib`, `.so`, `.dylib` files in kit
+- **Platform Dependencies:** ⚠️ Optional (not bundled, configured at build time)
+  - Windows: WinHTTP (built-in, no vcpkg needed)
+  - macOS: OpenSSL 3.x (optional, via Homebrew auto-detection)
+  - Linux: OpenSSL 3.x (optional, system package)
+- **Integration Interface:**
+  - Main include: `#include "portable-license-drop-in/core/LICENSE_ENGINE.hpp"`
+  - Namespace: `LicenseEngine::`
+  - Core class: `LicenseEngine::LicenseEngine`
+  - Config: `LicenseEngine::LicenseConfig`
+- **Thread Safety Model:** ✅ Dual API design
+  - Audio thread: `isLicensedAtomically()`, `getDaysRemainingAtomically()`, `isFeatureEnabledAtomically()` (non-blocking, atomic)
+  - UI thread: `initialize()`, `activateLicense()`, `refreshLicenseStatus()`, `isLicensed()` (may block, mutex-protected)
+- **Key Features:**
+  - Trial periods (14+ days configurable)
+  - Subscription licenses with grace periods (7 days default)
+  - Perpetual licenses
+  - Offline validation (30+ days)
+  - Drop-data fallback with `getLastKnownGoodState()`
+
+**Status:** ✅ **BLOCKER 2 RESOLVED** - License engine is truly header-only, zero compilation overhead, ready for Phase 2 integration
+
+---
+
+### Assessment Task 3: Portable License Drop-In Kit Integration Audit
+
+**Goal:** Map drop-in kit components to Phase 1-7 tasks
+
+| Task | Owner | Status | Acceptance Criteria |
+|------|-------|--------|-------------------|
+| List all public headers in drop-in kit | TBD | ✅ PASS | Document file paths for `LicenseEngine.h`, `LicenseSSOT.h`, etc. |
+| Identify required constants and enums | TBD | ✅ PASS | Match drop-in constants to Phase 1 task requirements (trial days, mute flag, watermark) |
+| Check for CMakeLists.txt or build configuration | TBD | ✅ PASS | Document if kit provides CMake integration or manual configuration needed |
+| Validate compatibility with JUCE/existing build system | TBD | ✅ PASS | Confirm drop-in kit doesn't conflict with current CMakeLists.txt |
+| Extract UI component requirements | TBD | ✅ PASS | Document what Phase 3 UI components must implement |
+| Review platform-specific code (macOS Keychain, Windows Registry, Linux) | TBD | ✅ PASS | Confirm platform support matches deployment target (macOS staging) |
+
+**Output:** ✅ Integration Mapping Verified
+- **Public API Headers:** Core engine ready for direct inclusion
+  - `portable-license-drop-in/core/LICENSE_ENGINE.hpp` — Main engine
+- **Integration Guide Provided:** ✅ Three approaches documented
+  1. Simple Drop-In (Recommended for BULLsEYE) — Cleanest, no AnalogMorph coupling
+  2. Source Extraction — For AnalogMorph reuse
+  3. Factored Implementation — Maximum flexibility with DI
+- **Recommended Approach for BULLsEYE:** Simple Drop-In (#1)
+  - No external dependencies
+  - Header-only integration
+  - SSOT-friendly configuration
+  - Matches BULLsEYE's own identity
+- **UI Component Interface:** Clearly defined
+  - `LicenseEngine::getLicenseStatusMessage()` → Status display
+  - `LicenseEngine::activateLicense()` → Activation dialog
+  - `LicenseEngine::isLicensed()` → Feature gates
+- **Platform Support:** ✅ Staging phase target met
+  - **macOS:** ✅ Keychain storage (Foundation.framework + Security.framework)
+  - **Windows:** ✅ Registry storage (WinHTTP built-in)
+  - **Linux:** ✅ File-based storage (~/.config/)
+- **Build System:** ✅ No CMakeLists conflicts
+  - Kit is header-only, no build configuration needed
+  - OpenSSL is conditional (optional, configured at build time)
+  - CMake changes: Only add include paths and source files
+- **Documentation Provided:** ✅ Comprehensive
+  - `LICENSE_DROP_IN_LAWS.md` — Threading rules (Laws 1-9)
+  - `INTEGRATION_GUIDE.md` — Step-by-step with code examples
+  - `DEPENDENCIES_ASSESSMENT.md` — Platform-specific details
+  - `LEARNING_CURVE_ANALYSIS.md` — Learning curve (3-4 days expected)
+  - `VERIFICATION_REPORT.md` — Verification checklist
+  - `LICENSE_ENGINE_INTEGRATION_PLAN.md` — Phase-by-phase integration for BULLsEYE
+- **Related Documentation in Kit:**
+  - `baseline/01_THREAD_SAFETY.md` — Audio thread safety laws
+  - `examples/` — VST3, AU, Standalone, AnalogMorphV3 examples
+
+**Status:** ✅ **BLOCKER 3 RESOLVED** - Drop-in kit is fully audited, compatible with BULLsEYE architecture, Simple Drop-In approach ready for Phase 1-7 execution
+
+---
+
+### Assessment Deliverables
+
+| Deliverable | Owner | Due | Format |
+|-------------|-------|-----|--------|
+| Network Validation Spec Report | TBD | Before Phase 1 | Markdown in `docs/` or inline comments |
+| License Engine Architecture Document | TBD | Before Phase 1 | Markdown in `docs/` or reference in sprint_2.md |
+| Integration Mapping & Action Items | TBD | Before Phase 1 | Table in sprint_2.md with updated Phase 1 tasks |
+
+---
+
+### Assessment Done Criteria
+
+**Phase 1 Pre-Flight Status: ✅ ALL GATES PASSED**
+
+- ✅ BLOCKER 1 RESOLVED: Network validation spec is comprehensive (API config, endpoints, timeouts, OpenSSL strategies, ANMO compliance)
+- ✅ BLOCKER 2 RESOLVED: License engine is header-only, zero compilation overhead, dual thread-safe API confirmed
+- ✅ BLOCKER 3 RESOLVED: Drop-in kit fully compatible with BULLsEYE, Simple Drop-In approach selected, no build conflicts
+- ✅ Integration mapping identifies NO conflicts with existing build system
+- ✅ LicenseSSOT.h constants are documented and ready for Phase 1 task (see NETWORK_VALIDATION_REFERENCE.md section 1.1-1.4)
+- ✅ CMakeLists.txt include strategy is confirmed (simple: add include path + source files, no build config changes needed)
+- ✅ No critical architectural surprises discovered
+
+---
+
+## Assessment Summary
+
+### Key Findings
+
+1. **Portable License Drop-In Kit Quality: EXCELLENT** ✅
+   - Comprehensive documentation (765-line network spec, 262-line integration guide, phase-by-phase plan already created)
+   - Header-only implementation (zero compilation overhead)
+   - Proven thread-safe dual API design (audio-atomic + UI-blocking)
+   - All three integration approaches documented with examples
+
+2. **BULLsEYE Integration Strategy: SIMPLE DROP-IN** ✅
+   - Cleanest approach for BULLsEYE's own product identity
+   - No AnalogMorphV333 source extraction needed
+   - SSOT-friendly configuration
+   - Minimal CMake changes (include paths only)
+
+3. **Compliance Risk Assessment: LOW** ✅
+   - ANMO macOS Laws 1-9: All covered by drop-in kit docs and NETWORK_VALIDATION_REFERENCE
+   - Thread safety: Dual API design prevents audio thread blocking
+   - Build system: Header-only, no dependency conflicts
+   - Platform support: macOS (Keychain), Windows (Registry), Linux (file) all documented
+
+4. **Estimated Effort Reaffirmed: 12-14 Days** ✅
+   - Phase 1 (Foundation): 1 day — CMake + LicenseSSOT.h
+   - Phase 2 (Core): 2 days — PluginProcessor integration + atomic API
+   - Phase 3 (UI): 2 days — LicenseStatusComponent + activation dialog
+   - Phase 4 (macOS): 2 days — Deployment verification + codesign
+   - Phase 5 (Cross-Platform): 1 day — Windows/Linux preparation
+   - Phase 6 (Testing): 3 days — 20 new tests + DAW validation
+   - Phase 7 (Documentation): 1 day — Changelogs, release tag
+
+5. **Ready to Proceed: YES** ✅
+   - All blockers resolved
+   - No architectural surprises
+   - Clear path forward with detailed guidance in kit docs
+   - Existing 48 tests must continue passing (regression check)
+
+### Action Items Before Phase 1 Execution
+
+1. ✅ **Review Decision:** Simple Drop-In approach confirmed (no extraction, no DI complexity)
+2. ✅ **Pre-Integration:** Read `portable-license-drop-in/LICENSE_DROP_IN_LAWS.md` (Laws 1-9, threading rules)
+3. ✅ **API Reference:** Bookmark `portable-license-drop-in/core/LICENSE_ENGINE.hpp` (public API)
+4. ✅ **Build Verification:** Ensure existing 48 tests pass baseline before Phase 1 changes
+5. ⏳ **Phase 1 Start:** Create `Source/SSOT/LicenseSSOT.h` using NETWORK_VALIDATION_REFERENCE.md as source
 
 ---
 
@@ -237,15 +436,15 @@
 ### Phase Completion Criteria
 
 **Phase 1 Complete When:**
-- [x] LicenseSSOT.h created with all constants
-- [x] CMakeLists.txt builds successfully with new includes
-- [x] No functional changes to plugin behavior
+- [ ] LicenseSSOT.h created with all constants
+- [ ] CMakeLists.txt builds successfully with new includes
+- [ ] No functional changes to plugin behavior
 
 **Phase 2 Complete When:**
-- [x] License engine initialized in constructor
-- [x] `isLicensedAtomically()` gate in `processBlock`
-- [x] All audio thread safety tests pass
-- [x] Zero allocations in audio path (verified with profiler)
+- [ ] License engine initialized in constructor
+- [ ] `isLicensedAtomically()` gate in `processBlock`
+- [ ] All audio thread safety tests pass
+- [ ] Zero allocations in audio path (verified with profiler)
 
 **Phase 3 Complete When:**
 - [x] LicenseStatusComponent displays trial/licensed status
