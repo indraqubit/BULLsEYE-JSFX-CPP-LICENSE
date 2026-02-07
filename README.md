@@ -55,6 +55,71 @@ Run the full test suite:
 
 **Current Status:** 48/48 tests passing ✅
 
+## Developer Workflows
+
+### macOS Development Flow (OSX Only)
+
+This repository follows a complete plugin development workflow:
+
+```
+JSFX Reference
+     ↓
+[JSFX to C++ Migration]
+     ↓
+JUCE C++ Plugin
+     ↓
+[License Integration]
+     ↓
+Licensed C++ Plugin
+     ↓
+[Installer/Distribution]
+     ↓
+End User Distribution
+```
+
+**Current Status:** Complete through License Integration step ✅
+
+#### Workflow Stages
+
+1. **JSFX Reference** (`jsfx/BULLsEYE-Mini-Combo.jsfx`)
+   - Original JSFX implementation
+   - Used for parity verification
+   - Reference for algorithm validation
+
+2. **JSFX to C++ Migration** (`Source/DSP/BULLsEYEProcessor.h`)
+   - ITU-R BS.1770-4 K-weighting implementation
+   - LUFS-I gated integration algorithm
+   - True peak detection with 4x oversampling
+   - Full parity testing (31 architectural laws)
+
+3. **JUCE C++ Plugin**
+   - VST3 format support
+   - Audio Units (AU) support
+   - Universal binary (x86_64 + arm64)
+   - Professional UI with circular meter
+
+4. **License Integration** (`portable-license-drop-in/`)
+   - Optional license engine integration
+   - Drop-in license verification system
+   - See INTEGRATION_GUIDE.md for details
+
+5. **Installer Integration**
+   - Distribution packaging
+   - Code signing & notarization ready
+   - See BUILD_DEPLOYMENT.md
+
+#### Platform Support
+
+| Platform | Status | Support |
+|----------|--------|---------|
+| **macOS** | ✅ Active | Full support, universal binary |
+| **Windows** | ⏸️ Deferred | Future expansion (not in scope for v2.0) |
+| **Linux** | ⏸️ Deferred | Future expansion (not in scope for v2.0) |
+
+**Note:** This repository is focused on macOS (OSX) development. Windows and Linux support are deferred for future versions.
+
+---
+
 ## Architecture
 
 ### Core Components
