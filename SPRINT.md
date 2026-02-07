@@ -266,6 +266,34 @@ All 12 test suites passing at 100%:
 - **Root Cause:** Test didn't account for JSFX_CALIBRATION_OFFSET_DB (+1.7 dB) and filter transient response
 - **Solution:** Updated to reasonable bounds (EXPECT_LE 1.0, EXPECT_GE -5.0)
 - **Status:** ✅ FIXED
+
+---
+
+## Future Work: License Integration (v2.1+)
+
+### Portable License Drop-In System
+
+A comprehensive license engine integration system is available in `portable-license-drop-in/`:
+
+**Key Documents:**
+- `LICENSE_ENGINE_INTEGRATION_PLAN.md` - Complete integration roadmap and technical approach
+- `INTEGRATION_GUIDE.md` - Step-by-step implementation guide
+- `DEPENDENCIES_ASSESSMENT.md` - Dependency analysis and risk assessment
+- `VERIFICATION_REPORT.md` - Security and functionality verification
+
+**Current Status:** Ready for evaluation (v2.1+)
+
+**Planned Approach:**
+1. Review LICENSE_ENGINE_INTEGRATION_PLAN.md for technical approach
+2. Evaluate integration complexity vs. benefit
+3. Plan license implementation as part of v2.1 release
+4. Implement drop-in license verification system
+5. Test with protected distribution builds
+
+**See Also:**
+- `portable-license-drop-in/INTEGRATION_GUIDE.md` - For integration details
+- `portable-license-drop-in/core/LICENSE_ENGINE.hpp` - License engine implementation
+- `portable-license-drop-in/examples/` - Integration examples for VST3/AU
   - **Root Cause:** Test expected LUFS <= 0.0 for a 0.95 amplitude sine wave, but calibration offset adds +1.7 dB
   - **Expected:** 0.95 amplitude sine = -2.45 LUFS raw, +1.7 dB with calibration = -0.75 LUFS (still <= 0.0, but higher due to processing)
   - **Solution:** Updated expectations to `EXPECT_LE(lufs, 1.0)` and `EXPECT_GE(lufs, -5.0)` to allow for filter transients and calibration
